@@ -49,6 +49,12 @@ public interface FlowBuilderDsl {
     AfterGoTo<TState, TStep, TRoute> next(TStep target);
   }
 
+  interface OnError<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
+    AfterOnError<TState, TStep, TRoute> onError(BiConsumer<TState, Throwable> errorHandler);
+    AfterOnError<TState, TStep, TRoute> onError(Consumer<Throwable> errorHandler);
+    AfterOnError<TState, TStep, TRoute> onErrorThrow();
+  }
+
   interface Build<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
     Flow<TState, TStep, TRoute> build();
   }
@@ -64,6 +70,13 @@ public interface FlowBuilderDsl {
   }
 
   interface AfterGoTo<TState, TStep extends Enum<?>, TRoute extends Enum<?>> extends
+    OnError<TState, TStep, TRoute>,
+    When<TState, TStep, TRoute>,
+    In<TState, TStep, TRoute>,
+    Build<TState, TStep, TRoute> {
+  }
+
+  interface AfterOnError<TState, TStep extends Enum<?>, TRoute extends Enum<?>> extends
     When<TState, TStep, TRoute>,
     In<TState, TStep, TRoute>,
     Build<TState, TStep, TRoute> {
@@ -82,6 +95,7 @@ public interface FlowBuilderDsl {
     Build<TState, TStep, TRoute>,
     AfterIn<TState, TStep, TRoute>,
     AfterWhen<TState, TStep, TRoute>,
-    AfterGoTo<TState, TStep, TRoute> {
+    AfterGoTo<TState, TStep, TRoute>,
+    AfterOnError<TState, TStep, TRoute> {
   }
 }

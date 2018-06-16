@@ -8,6 +8,8 @@ public interface FlowExecutionInfo<TState, TStep, TRoute> {
 
   TState geState();
 
+  boolean isComplete();
+
   Instant getStartTime();
 
   Instant getEndTime();

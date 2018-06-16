@@ -7,6 +7,7 @@ import logicaltruth.flow.impl.builder.FlowBuilderException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -16,6 +17,7 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
   private TStep nextStep;
   private Consumer<TState> handler;
   private Flow flowHandler;
+  private BiConsumer<TState, Throwable> errorHandler;
   private Function<TState, TRoute> router;
   private Map<TRoute, Consumer<TState>> routeHandlerMap = new HashMap<>();
   private Map<TRoute, TStep> routeTargetMap = new HashMap<TRoute, TStep>();
@@ -52,6 +54,10 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
     this.nextStep = nextStep;
   }
 
+  public void setErrorHandler(BiConsumer<TState, Throwable> errorHandler) {
+    this.errorHandler = errorHandler;
+  }
+
   public FlowExecutionInfo<TState, TStep, TRoute> execute(TState context) {
     FlowExecutionInfoImpl<TState, TStep, TRoute> executionInfo = new FlowExecutionInfoImpl<>();
     executionInfo.setStartTime(Instant.now());
@@ -76,10 +82,17 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
         executionInfo.setNextStep(nextStep);
       }
 
+      executionInfo.setComplete(true);
       executionInfo.setEndTime(Instant.now());
 
     } catch(Throwable error) {
-      executionInfo.setError(error);
+      if(errorHandler != null) {
+        errorHandler.accept(context, error);
+        executionInfo.setComplete(true);
+      }
+      else {
+        executionInfo.setError(error);
+      }
     }
 
     executionInfo.setEndTime(Instant.now());

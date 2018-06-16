@@ -21,6 +21,8 @@ public class FlowExecutionInfoImpl<TState, TStep extends Enum<?>, TRoute extends
   private Throwable error;
   private TStep nextStep;
 
+  private boolean isComplete;
+
   private static String getStackTrace(Throwable error) {
     StringWriter writer = new StringWriter();
     PrintWriter printWriter = new PrintWriter(writer);
@@ -103,6 +105,14 @@ public class FlowExecutionInfoImpl<TState, TStep extends Enum<?>, TRoute extends
     this.nextStep = nextStep;
   }
 
+  public boolean isComplete() {
+    return isComplete;
+  }
+
+  public void setComplete(boolean complete) {
+    isComplete = complete;
+  }
+
   @Override
   public String toString() {
     List<FlowExecutionInfo<TState, TStep, TRoute>> children = getChildExecutionInfo();
@@ -111,6 +121,7 @@ public class FlowExecutionInfoImpl<TState, TStep extends Enum<?>, TRoute extends
         "\n\t \"flow\" : \"" + name + "\"," : "") +
       (Objects.nonNull(step) ?
         "\n\t \"step\" : \"" + step + "\"," : "") +
+      "\n\t \"complete\" : \"" + isComplete + "\"" +
       "\n\t \"startTime\" : \"" + getStartTime() + "\"" +
       ",\n\t \"endTime\" : \"" + getEndTime() + "\"" +
       (Objects.nonNull(route) ?
@@ -123,4 +134,6 @@ public class FlowExecutionInfoImpl<TState, TStep extends Enum<?>, TRoute extends
         ",\n\t \"nextStep\" : \"" + nextStep + "\"" : "") +
       "\n }";
   }
+
+
 }
