@@ -81,7 +81,20 @@ public class BasicTests {
       .build();
   }
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_handled(boolean withError) {
+  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_handled1(boolean withError) {
+    return FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+      start("STEPS", GENERIC_STEPS.A).execute(c -> {
+      String s = (String) c.get("input");
+      if(withError) throw new RuntimeException(("ERROR"));
+      c.put("output", s.length());
+    }).next(GENERIC_STEPS.B).onError((c, t) -> c.put("output", 1000))
+      .in(GENERIC_STEPS.B).execute(c -> {
+        printIntegerSquare.execute((Integer) c.get("output"));
+      }).next(GENERIC_STEPS.C)
+      .build();
+  }
+
+  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_handled2(boolean withError) {
     return FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
       start("STEPS", GENERIC_STEPS.A).execute(c -> {
       String s = (String) c.get("input");
@@ -142,7 +155,7 @@ public class BasicTests {
       .in(GENERIC_STEPS.Y).flow(printIntegerSquare.<Map>with(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         return ((String) c.get("input")).length();
-      })).next(GENERIC_STEPS.Z)
+      })).next(GENERIC_STEPS.Z).onError(t -> System.out.println(t))
       .build();
   }
 
@@ -239,15 +252,28 @@ public class BasicTests {
   }
 
   @Test
-  public void test_flow_error_handled() {
+  public void test_flow_error_handled1() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");
     }};
 
-    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = error_handled(false).execute(state);
+    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = error_handled1(false).execute(state);
     System.out.println(info);
 
-    info = error_handled(true).execute(state);
+    info = error_handled1(true).execute(state);
+    System.out.println(info);
+  }
+
+  @Test
+  public void test_flow_error_handled2() {
+    Map<String, Object> state = new HashMap<String, Object>() {{
+      put("input", "Hello world");
+    }};
+
+    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = error_handled2(false).execute(state);
+    System.out.println(info);
+
+    info = error_handled2(true).execute(state);
     System.out.println(info);
   }
 
@@ -296,7 +322,10 @@ public class BasicTests {
       put("input", "Hello world");
     }};
 
-    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = nested_error(true).execute(state);
+    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = nested_error(false).execute(state);
+    System.out.println(info);
+
+    info = nested_error(true).execute(state);
     System.out.println(info);
   }
 }

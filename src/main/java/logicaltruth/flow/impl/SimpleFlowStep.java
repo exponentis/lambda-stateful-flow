@@ -69,12 +69,20 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
         executionInfo.setRoute(route);
         Consumer<TState> routeHandler = routeHandlerMap.get(route);
         if(routeHandler != null) {
+          try {
           routeHandler.accept(context);
+          } catch(Throwable error) {
+            handleError(context, executionInfo, error);
+          }
         }
         executionInfo.setNextStep(routeTargetMap.get(route));
       } else {
         if(handler != null) {
+          try {
           handler.accept(context);
+          } catch(Throwable error) {
+            handleError(context, executionInfo, error);
+          }
         } else if(flowHandler != null) {
           FlowExecutionInfo<TState, TStep, TRoute> stepExecutionInfo = flowHandler.execute(context);
           executionInfo.addChildExecutionInfo(stepExecutionInfo);
@@ -86,16 +94,19 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
       executionInfo.setEndTime(Instant.now());
 
     } catch(Throwable error) {
-      if(errorHandler != null) {
-        errorHandler.accept(context, error);
-        executionInfo.setComplete(true);
-      }
-      else {
-        executionInfo.setError(error);
-      }
+      handleError(context, executionInfo, error);
     }
 
     executionInfo.setEndTime(Instant.now());
     return executionInfo;
+  }
+
+  private void handleError(TState context, FlowExecutionInfoImpl<TState, TStep, TRoute> executionInfo, Throwable error) {
+    if(errorHandler != null) {
+      errorHandler.accept(context, error);
+    }
+    else {
+      executionInfo.setError(error);
+    }
   }
 }
