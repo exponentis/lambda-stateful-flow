@@ -1,7 +1,7 @@
 package logicaltruth.flow.impl.builder;
 
 import logicaltruth.flow.api.Flow;
-import logicaltruth.flow.api.FlowBuilderDsl;
+import static logicaltruth.flow.api.FlowBuilderDsl.*;
 import logicaltruth.flow.impl.SimpleFlow;
 import logicaltruth.flow.impl.SimpleFlowStep;
 
@@ -11,7 +11,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> implements FlowBuilderDsl.FluentFlowBuilder<TState, TStep, TRoute> {
+public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> implements FluentFlowBuilder<TState, TStep, TRoute> {
 
   //builder outcome
   private final String name;
@@ -31,19 +31,19 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
     this.initialState = initialState;
   }
 
-  public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> FlowBuilderDsl.AfterIn<TState, TStep, TRoute> start(String name, TStep initialState) {
+  public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> AfterIn<TState, TStep, TRoute> start(String name, TStep initialState) {
     FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>(name, initialState);
     flowBuilder.in(initialState);
     return flowBuilder;
   }
 
-  public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> FlowBuilderDsl.AfterIn<TState, TStep, TRoute> start(TStep initialState) {
+  public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> AfterIn<TState, TStep, TRoute> start(TStep initialState) {
     FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>("", initialState);
     flowBuilder.in(initialState);
     return flowBuilder;
   }
 
-  public FlowBuilderDsl.AfterIn<TState, TStep, TRoute> in(TStep state) {
+  public AfterIn<TState, TStep, TRoute> in(TStep state) {
     addStep(state);
     currentStep = state;
     currentRoute = null;
@@ -55,7 +55,7 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
       steps.put(state, new SimpleFlowStep(state));
   }
 
-  public FlowBuilderDsl.When<TState, TStep, TRoute> choice(Function<TState, TRoute> router) {
+  public When<TState, TStep, TRoute> choice(Function<TState, TRoute> router) {
     if(currentStep != null)
       getCurrentStep().setRouter(router);
     return this;
@@ -68,12 +68,12 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
     return steps.get(currentStep);
   }
 
-  public FlowBuilderDsl.AfterWhen<TState, TStep, TRoute> when(TRoute route) {
+  public AfterWhen<TState, TStep, TRoute> when(TRoute route) {
     currentRoute = route;
     return this;
   }
 
-  public FlowBuilderDsl.AfterGoTo<TState, TStep, TRoute> next(TStep target) {
+  public AfterGoTo<TState, TStep, TRoute> next(TStep target) {
     addStep(target);
 
     if(currentRoute != null) {
@@ -85,7 +85,7 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
     return this;
   }
 
-  public FlowBuilderDsl.GoTo<TState, TStep, TRoute> execute(Consumer<TState> handler) {
+  public GoTo<TState, TStep, TRoute> execute(Consumer<TState> handler) {
     if(currentRoute != null) {
       getCurrentStep().setRouteHandler(currentRoute, handler);
     } else {
@@ -94,12 +94,12 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
     return this;
   }
 
-  public FlowBuilderDsl.GoTo<TState, TStep, TRoute> flow(Flow flow) {
+  public GoTo<TState, TStep, TRoute> flow(Flow flow) {
     getCurrentStep().setHandler(flow);
     return this;
   }
 
-  public <I, O> FlowBuilderDsl.GoTo<TState, TStep, TRoute> execute(Function<TState, I> pre, BiConsumer<O, TState> post, Function<I, O> h) {
+  public <I, O> GoTo<TState, TStep, TRoute> execute(Function<TState, I> pre, BiConsumer<O, TState> post, Function<I, O> h) {
     Consumer<TState> handler = c -> pre.andThen(h).andThen(o -> {
       post.accept(o, c);
       return null;
@@ -109,26 +109,26 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
   }
 
   @Override
-  public <I, O> FlowBuilderDsl.AfterAdapters<TState, TStep, TRoute> withAdapters(Function<TState, I> pre, BiConsumer<O, TState> post) {
+  public <I, O> AfterAdapters<TState, TStep, TRoute> withAdapters(Function<TState, I> pre, BiConsumer<O, TState> post) {
     inputAdapter = pre;
     outputAdapter = post;
     return this;
   }
 
   @Override
-  public <I, O> FlowBuilderDsl.GoTo<TState, TStep, TRoute> execute(Function<I, O> h) {
+  public <I, O> GoTo<TState, TStep, TRoute> execute(Function<I, O> h) {
     return execute((Function<TState, I>) inputAdapter, (BiConsumer<O, TState>) outputAdapter, h);
   }
 
   @Override
-  public <I> FlowBuilderDsl.AfterExtract<TState, TStep, TRoute> extract(Function<TState, I> pre) {
+  public <I> AfterExtract<TState, TStep, TRoute> extract(Function<TState, I> pre) {
     inputAdapter = pre;
     outputAdapter = (i, c) -> {};
     return this;
   }
 
   @Override
-  public <I> FlowBuilderDsl.GoTo<TState, TStep, TRoute> thenExecute(Consumer<I> h) {
+  public <I> GoTo<TState, TStep, TRoute> thenExecute(Consumer<I> h) {
     return execute((I i) -> {
       h.accept(i);
       return null;
@@ -136,13 +136,13 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
   }
 
   @Override
-  public <I, O> FlowBuilderDsl.AfterExecuteFunction<TState, TStep, TRoute> thenExecute(Function<I, O> h) {
+  public <I, O> AfterExecuteFunction<TState, TStep, TRoute> thenExecute(Function<I, O> h) {
     this.functionHandler = h;
     return this;
   }
 
   @Override
-  public <I, O> FlowBuilderDsl.GoTo<TState, TStep, TRoute> merge(BiConsumer<O, TState> outputAdapter) {
+  public <I, O> GoTo<TState, TStep, TRoute> merge(BiConsumer<O, TState> outputAdapter) {
     return execute((Function<TState, I>) inputAdapter, outputAdapter, (Function<I, O>) functionHandler);
   }
 

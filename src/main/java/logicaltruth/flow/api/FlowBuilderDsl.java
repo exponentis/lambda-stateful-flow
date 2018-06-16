@@ -77,7 +77,6 @@ public interface FlowBuilderDsl {
     AfterAdapters<TState, TStep, TRoute>,
     AfterExecuteFunction<TState, TStep, TRoute>,
     AfterExtract<TState, TStep, TRoute>,
-
     Merge<TState, TStep, TRoute>,
     GoTo<TState, TStep, TRoute>,
     Build<TState, TStep, TRoute>,
