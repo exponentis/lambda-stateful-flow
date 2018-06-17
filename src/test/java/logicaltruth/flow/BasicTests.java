@@ -1,4 +1,4 @@
-package logicaltruth.flow.basic;
+package logicaltruth.flow;
 
 import logicaltruth.flow.api.Flow;
 import logicaltruth.flow.api.FlowExecutionInfo;

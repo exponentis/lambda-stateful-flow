@@ -38,7 +38,7 @@ public class CreditService {
   }
 
   private static boolean validateUserName(String userName) {
-    return userName != null && userName.contains("Q");
+    return userName != null && !userName.isEmpty();
   }
 
   enum CREDIT_STEPS {
