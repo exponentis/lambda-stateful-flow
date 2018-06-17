@@ -1,4 +1,4 @@
-package logicaltruth.flow.samples.credit;
+package logicaltruth.flow.sample;
 
 public class Customer {
   private String userId;

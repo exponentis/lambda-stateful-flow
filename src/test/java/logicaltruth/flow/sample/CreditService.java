@@ -1,12 +1,12 @@
-package logicaltruth.flow.samples.credit;
+package logicaltruth.flow.sample;
 
 import logicaltruth.flow.api.Flow;
 import logicaltruth.flow.impl.builder.FlowBuilder;
 
 import java.util.Random;
 
-import static logicaltruth.flow.samples.credit.CreditService.CREDIT_ROUTES.*;
-import static logicaltruth.flow.samples.credit.CreditService.CREDIT_STEPS.*;
+import static logicaltruth.flow.sample.CreditService.CREDIT_ROUTES.*;
+import static logicaltruth.flow.sample.CreditService.CREDIT_STEPS.*;
 
 public class CreditService {
 
