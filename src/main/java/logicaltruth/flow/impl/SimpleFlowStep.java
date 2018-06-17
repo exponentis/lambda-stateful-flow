@@ -88,8 +88,12 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
             handleError(context, executionInfo, error);
           }
         } else if(flowHandler != null) {
+          try {
           FlowExecutionInfo<TState, TStep, TRoute> stepExecutionInfo = flowHandler.execute(context);
           executionInfo.addChildExecutionInfo(stepExecutionInfo);
+          } catch(Throwable error) {
+            handleError(context, executionInfo, error);
+          }
         }
         executionInfo.setNextStep(nextStep);
       }

@@ -155,9 +155,40 @@ public class BasicTests {
       .in(GENERIC_STEPS.Y).flow(printIntegerSquare.<Map>with(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         return ((String) c.get("input")).length();
-      })).next(GENERIC_STEPS.Z).onError(t -> System.out.println(t))
+      })).next(GENERIC_STEPS.Z).onErrorIgnore()
       .build();
   }
+
+  private Flow<Integer, GENERIC_STEPS, EMPTY> printIntegerSquareWithError = FlowBuilder.<Integer, GENERIC_STEPS, EMPTY>
+    start("SQUARE", GENERIC_STEPS.A).execute(c -> {throw new RuntimeException("OOPS");}).next(GENERIC_STEPS.B)
+    .build();
+
+  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+    start("NESTED", GENERIC_STEPS.X).execute(c -> {
+    String s = (String) c.get("input");
+    c.put("output", s.length());
+  }).next(GENERIC_STEPS.Y)
+    .in(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
+    .next(GENERIC_STEPS.Z)
+    .build();
+
+  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error_ignored = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+      start("NESTED", GENERIC_STEPS.X).execute(c -> {
+      String s = (String) c.get("input");
+      c.put("output", s.length());
+    }).next(GENERIC_STEPS.Y)
+      .in(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
+    .next(GENERIC_STEPS.Z).onErrorIgnore()
+      .build();
+
+  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error_handled = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+    start("NESTED", GENERIC_STEPS.X).execute(c -> {
+    String s = (String) c.get("input");
+    c.put("output", s.length());
+  }).next(GENERIC_STEPS.Y)
+    .in(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
+    .next(GENERIC_STEPS.Z).onError(t -> System.out.println(t))
+    .build();
 
   @Test
   public void test_flow_simple() {
@@ -337,7 +368,7 @@ public class BasicTests {
   }
 
   @Test
-  public void test_flow_nested_error() {
+  public void test_flow_nested_error1() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");
     }};
@@ -346,6 +377,36 @@ public class BasicTests {
     System.out.println(info);
 
     info = nested_error(true).execute(state);
+    System.out.println(info);
+  }
+
+  @Test(expected = FlowExecutionException.class)
+  public void test_flow_nested_error2() {
+    Map<String, Object> state = new HashMap<String, Object>() {{
+      put("input", "Hello world");
+    }};
+
+    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = nested_error.execute(state);
+    System.out.println(info);
+  }
+
+  @Test
+  public void test_flow_nested_error_ignored() {
+    Map<String, Object> state = new HashMap<String, Object>() {{
+      put("input", "Hello world");
+    }};
+
+    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = nested_error_ignored.execute(state);
+    System.out.println(info);
+  }
+
+  @Test
+  public void test_flow_nested_error_handled() {
+    Map<String, Object> state = new HashMap<String, Object>() {{
+      put("input", "Hello world");
+    }};
+
+    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = nested_error_handled.execute(state);
     System.out.println(info);
   }
 }
