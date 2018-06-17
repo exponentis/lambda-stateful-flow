@@ -11,24 +11,24 @@ import static logicaltruth.flow.sample.CreditService.CREDIT_STEPS.*;
 public class CreditService {
 
   public static final Flow<CreditFlowState, CREDIT_STEPS, CREDIT_ROUTES> creditDecisionFlow = FlowBuilder.<CreditFlowState, CREDIT_STEPS, CREDIT_ROUTES>
-    start("CREDIT_DECISION", VALIDATE_INPUT).choice(state -> validateUserName((String) state.getUserId()) ? VALID_INPUT : INVALID_INPUT)
+    start("CREDIT_DECISION", VALIDATE_INPUT).choice(state -> validateUserName((String) state.getCustomerId()) ? VALID_INPUT : INVALID_INPUT)
     .when(VALID_INPUT).next(GET_USER_INFO)
     .when(INVALID_INPUT).next(FINISH)
     .in(GET_USER_INFO).execute(state -> {
-      Customer customer = getUser(state.getUserId());
+      Customer customer = getCustomer(state.getCustomerId());
       state.setCustomer(customer);
     }).next(GET_USER_CREDIT_SCORE)
     .in(GET_USER_CREDIT_SCORE).extract(CreditFlowState::getCustomer).thenExecute(CreditService::populateCreditScore).next(MAKE_DECISION)
     .in(MAKE_DECISION).extract(CreditFlowState::getCustomer).thenExecute(CreditService::makeDecision).merge((d, state) -> state.setCreditDecision((Boolean) d)).next(FINISH)
     .build();
 
-  private static boolean makeDecision(Customer u) {
-    return u.getCreditScore() > 500 ? true : false;
+  private static boolean makeDecision(Customer c) {
+    return c.getCreditScore() > 500 ? true : false;
   }
 
-  private static Customer getUser(String userId) {
+  private static Customer getCustomer(String userId) {
     Customer customer = new Customer();
-    customer.setUserId(userId);
+    customer.setCustomerId(userId);
     return customer;
   }
 
@@ -57,16 +57,16 @@ public class CreditService {
   }
 
   public static class CreditFlowState {
-    private String userId;
+    private String customerId;
     private Customer customer;
     private Boolean creditDecision;
 
-    public String getUserId() {
-      return userId;
+    public String getCustomerId() {
+      return customerId;
     }
 
-    public void setUserId(String userId) {
-      this.userId = userId;
+    public void setCustomerId(String customerId) {
+      this.customerId = customerId;
     }
 
     public Customer getCustomer() {

@@ -1,15 +1,15 @@
 package logicaltruth.flow.sample;
 
 public class Customer {
-  private String userId;
+  private String customerId;
   private Integer creditScore;
 
-  public String getUserId() {
-    return userId;
+  public String getCustomerId() {
+    return customerId;
   }
 
-  public void setUserId(String username) {
-    this.userId = username;
+  public void setCustomerId(String username) {
+    this.customerId = username;
   }
 
   public Integer getCreditScore() {
