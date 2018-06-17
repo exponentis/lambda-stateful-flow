@@ -12,13 +12,13 @@ public class CreditService {
 
   public static final Flow<CreditFlowState, CREDIT_STEPS, CREDIT_ROUTES> creditDecisionFlow = FlowBuilder.<CreditFlowState, CREDIT_STEPS, CREDIT_ROUTES>
     start("CREDIT_DECISION", VALIDATE_INPUT).choice(state -> validateUserName(state.getCustomerId()) ? VALID_INPUT : INVALID_INPUT)
-      .when(VALID_INPUT).next(GET_USER_INFO)
+      .when(VALID_INPUT).next(GET_CUSTOMER_INFO)
       .when(INVALID_INPUT).next(FINISH)
-    .in(GET_USER_INFO).execute(state -> {
+    .in(GET_CUSTOMER_INFO).execute(state -> {
       Customer customer = getCustomer(state.getCustomerId());
       state.setCustomer(customer);
-    }).next(GET_USER_CREDIT_SCORE)
-    .in(GET_USER_CREDIT_SCORE).extract(CreditFlowState::getCustomer).thenExecute(CreditService::populateCreditScore).next(ANALYZE_CREDIT_SCORE)
+    }).next(GET_CUSTOMER_CREDIT_SCORE)
+    .in(GET_CUSTOMER_CREDIT_SCORE).extract(CreditFlowState::getCustomer).thenExecute(CreditService::populateCreditScore).next(ANALYZE_CREDIT_SCORE)
     .in(ANALYZE_CREDIT_SCORE).choice(state -> analyzeScore(state.getCustomer().getCreditScore()))
       .when(CREDIT_LOW).next(DECISION_REJECT)
       .when(CREDIT_HIGH).next(DECISION_APPROVE)
@@ -61,8 +61,8 @@ public class CreditService {
 
   enum CREDIT_STEPS {
     VALIDATE_INPUT,
-    GET_USER_INFO,
-    GET_USER_CREDIT_SCORE,
+    GET_CUSTOMER_INFO,
+    GET_CUSTOMER_CREDIT_SCORE,
     ANALYZE_CREDIT_SCORE,
     EXTRA_ASSESMENT,
     MAKE_DECISION,
