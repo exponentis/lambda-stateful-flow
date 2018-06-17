@@ -143,7 +143,7 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
   }
 
   @Override
-  public <I, O> GoTo<TState, TStep, TRoute> merge(BiConsumer<O, TState> outputAdapter) {
+  public <I,O> GoTo<TState, TStep, TRoute> merge(BiConsumer<O, TState> outputAdapter) {
     return execute((Function<TState, I>) inputAdapter, outputAdapter, (Function<I, O>) functionHandler);
   }
 

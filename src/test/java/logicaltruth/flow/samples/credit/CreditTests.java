@@ -3,36 +3,33 @@ package logicaltruth.flow.samples.credit;
 import logicaltruth.flow.api.FlowExecutionInfo;
 import org.junit.Test;
 
-
-import java.util.HashMap;
-import java.util.Map;
+import static logicaltruth.flow.samples.credit.CreditService.CreditFlowState;
 
 public class CreditTests {
 
-
   @Test
-  public void test_conditionals_partial_flow() {
-    Map<String, Object> state1 = new HashMap<String, Object>() {{
-      put("userId", "ABC");
-    }};
+  public void test_conditionals_complete_flow() {
+    CreditFlowState state2 = new CreditFlowState();
+    state2.setUserId("AQBC");
 
-    FlowExecutionInfo<Map<String, Object>, CreditService.CREDIT_STEPS, CreditService.CREDIT_ROUTES> info = CreditService.creditDecisionFlow.execute(state1);
+    FlowExecutionInfo<CreditFlowState, CreditService.CREDIT_STEPS, CreditService.CREDIT_ROUTES> info = CreditService.creditDecisionFlow.execute(state2);
     System.out.println(info);
-    assert (null == state1.get("user"));
+
+    Customer customer = state2.getCustomer();
+    System.out.println(state2.getCreditDecision());
+
+    assert (null != customer);
   }
 
   @Test
-  public void test_conditionals_full_flow() {
-    Map<String, Object> state2 = new HashMap<String, Object>() {{
-      put("userId", "AQBC");
-    }};
+  public void test_conditionals_incomplete_flow() {
+    CreditFlowState state1 = new CreditFlowState();
+    state1.setUserId("ABC");
 
-    FlowExecutionInfo<Map<String, Object>, CreditService.CREDIT_STEPS, CreditService.CREDIT_ROUTES> info = CreditService.creditDecisionFlow.execute(state2);
+    FlowExecutionInfo<CreditFlowState, CreditService.CREDIT_STEPS, CreditService.CREDIT_ROUTES> info = CreditService.creditDecisionFlow.execute(state1);
     System.out.println(info);
-
-    User user = (User) state2.get("user");
-    System.out.println(user.getCreditDecision());
-
-    assert (null != user);
+    assert (null == state1.getCustomer());
   }
+
+
 }
