@@ -13,11 +13,15 @@ import java.util.function.Function;
 
 public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?>> implements Flow<TState, TStep, TRoute> {
 
+  public static final Consumer<Throwable> DEFAULT_ERROR_HANDLER = t -> {
+    throw new FlowExecutionException(t);
+  };
+
   private TStep state;
   private TStep nextStep;
   private Consumer<TState> handler;
   private Flow flowHandler;
-  private BiConsumer<TState, Throwable> errorHandler;
+  private BiConsumer<TState, Throwable> errorHandler = (c, t) -> DEFAULT_ERROR_HANDLER.accept(t);
   private Function<TState, TRoute> router;
   private Map<TRoute, Consumer<TState>> routeHandlerMap = new HashMap<>();
   private Map<TRoute, TStep> routeTargetMap = new HashMap<TRoute, TStep>();

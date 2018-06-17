@@ -3,7 +3,6 @@ package logicaltruth.flow.impl.builder;
 import logicaltruth.flow.api.Flow;
 import static logicaltruth.flow.api.FlowBuilderDsl.*;
 
-import logicaltruth.flow.impl.FlowExecutionException;
 import logicaltruth.flow.impl.SimpleFlow;
 import logicaltruth.flow.impl.SimpleFlowStep;
 
@@ -14,10 +13,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> implements FluentFlowBuilder<TState, TStep, TRoute> {
-
-  private static final Consumer<Throwable> DEFAULT_ERROR_HANDLER = t -> {
-    throw new FlowExecutionException(t);
-  };
 
   //builder outcome
   private final String name;
@@ -167,8 +162,13 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
     return onError((c, t) -> errorHandler.accept(t));
   }
 
+  //@Override
+  private AfterOnError<TState, TStep, TRoute> onErrorThrow() {
+    return onError(SimpleFlowStep.DEFAULT_ERROR_HANDLER);
+  }
+
   @Override
-  public AfterOnError<TState, TStep, TRoute> onErrorThrow() {
-    return onError(DEFAULT_ERROR_HANDLER);
+  public AfterOnError<TState, TStep, TRoute> onErrorIgnore() {
+    return onError((BiConsumer<TState, Throwable>) null);
   }
 }

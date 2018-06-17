@@ -133,7 +133,7 @@ public class BasicTests {
       .build();
   }
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_rethrown3(boolean withError) {
+  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_ignored(boolean withError) {
     return FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
       start("STEPS", GENERIC_STEPS.A).execute(c -> {
       String s = (String) c.get("input");
@@ -142,7 +142,7 @@ public class BasicTests {
       .in(GENERIC_STEPS.B).execute(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         printIntegerSquare.execute((Integer) c.get("output"));
-      }).next(GENERIC_STEPS.C).onErrorThrow()
+      }).next(GENERIC_STEPS.C).onErrorIgnore()
       .build();
   }
 
@@ -232,8 +232,8 @@ public class BasicTests {
     assertEquals(3, state.get("length"));
   }
 
-  @Test
-  public void test_flow_error() {
+  @Test(expected = FlowExecutionException.class)
+  public void test_flow_error1() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");
     }};
@@ -243,8 +243,28 @@ public class BasicTests {
 
     info = error(true, false).execute(state);
     System.out.println(info);
+  }
+
+  @Test(expected = FlowExecutionException.class)
+  public void test_flow_error2() {
+    Map<String, Object> state = new HashMap<String, Object>() {{
+      put("input", "Hello world");
+    }};
+
+    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = error(false, false).execute(state);
+    System.out.println(info);
 
     info = error(false, true).execute(state);
+    System.out.println(info);
+  }
+
+  @Test(expected = FlowExecutionException.class)
+  public void test_flow_error3() {
+    Map<String, Object> state = new HashMap<String, Object>() {{
+      put("input", "Hello world");
+    }};
+
+    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = error(false, false).execute(state);
     System.out.println(info);
 
     info = error(true, true).execute(state);
@@ -303,16 +323,16 @@ public class BasicTests {
     System.out.println(info);
   }
 
-  @Test(expected = FlowExecutionException.class)
-  public void test_flow_error_rethrown3() {
+  @Test
+  public void test_flow_error_ignored() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");
     }};
 
-    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = error_rethrown3(false).execute(state);
+    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = error_ignored(false).execute(state);
     System.out.println(info);
 
-    info = error_rethrown3(true).execute(state);
+    info = error_ignored(true).execute(state);
     System.out.println(info);
   }
 
