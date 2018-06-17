@@ -29,6 +29,9 @@ public class SimpleFlow<TState, TStep extends Enum<?>, TRoute extends Enum<?>> i
 
     boolean isComplete = true;
     while(step != null) {
+      if(!isComplete)
+        break;
+
       SimpleFlowStep currentFlowStep = steps.get(step);
       flowExecutionInfo.setStep(step);
       if(currentFlowStep == null)
@@ -36,7 +39,7 @@ public class SimpleFlow<TState, TStep extends Enum<?>, TRoute extends Enum<?>> i
       FlowExecutionInfo<TState, TStep, TRoute> stepExecutionInfo = currentFlowStep.execute(context);
       flowExecutionInfo.addChildExecutionInfo(stepExecutionInfo);
       isComplete = isComplete && stepExecutionInfo.isComplete();
-        step = stepExecutionInfo.getNextStep();
+      step = stepExecutionInfo.getNextStep();
     }
     flowExecutionInfo.setComplete(isComplete);
     flowExecutionInfo.setEndTime(Instant.now());

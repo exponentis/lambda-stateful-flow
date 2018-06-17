@@ -133,7 +133,7 @@ public class BasicTests {
       .build();
   }
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_ignored(boolean withError) {
+  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_rethrown3(boolean withError) {
     return FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
       start("STEPS", GENERIC_STEPS.A).execute(c -> {
       String s = (String) c.get("input");
@@ -142,7 +142,7 @@ public class BasicTests {
       .in(GENERIC_STEPS.B).execute(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         printIntegerSquare.execute((Integer) c.get("output"));
-      }).next(GENERIC_STEPS.C).onErrorIgnore()
+      }).next(GENERIC_STEPS.C).onErrorThrow()
       .build();
   }
 
@@ -155,7 +155,7 @@ public class BasicTests {
       .in(GENERIC_STEPS.Y).flow(printIntegerSquare.<Map>with(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         return ((String) c.get("input")).length();
-      })).next(GENERIC_STEPS.Z).onErrorIgnore()
+      })).next(GENERIC_STEPS.Z) //.onErrorIgnore()
       .build();
   }
 
@@ -178,7 +178,7 @@ public class BasicTests {
       c.put("output", s.length());
     }).next(GENERIC_STEPS.Y)
       .in(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
-    .next(GENERIC_STEPS.Z).onErrorIgnore()
+    .next(GENERIC_STEPS.Z) //.onErrorIgnore()
       .build();
 
   Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error_handled = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
@@ -263,7 +263,7 @@ public class BasicTests {
     assertEquals(3, state.get("length"));
   }
 
-  @Test(expected = FlowExecutionException.class)
+  @Test //(expected = FlowExecutionException.class)
   public void test_flow_error1() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");
@@ -276,7 +276,7 @@ public class BasicTests {
     System.out.println(info);
   }
 
-  @Test(expected = FlowExecutionException.class)
+  @Test //(expected = FlowExecutionException.class)
   public void test_flow_error2() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");
@@ -289,7 +289,7 @@ public class BasicTests {
     System.out.println(info);
   }
 
-  @Test(expected = FlowExecutionException.class)
+  @Test //(expected = FlowExecutionException.class)
   public void test_flow_error3() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");
@@ -354,16 +354,16 @@ public class BasicTests {
     System.out.println(info);
   }
 
-  @Test
-  public void test_flow_error_ignored() {
+  @Test(expected = FlowExecutionException.class)
+  public void test_flow_error_rethrown3() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");
     }};
 
-    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = error_ignored(false).execute(state);
+    FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = error_rethrown3(false).execute(state);
     System.out.println(info);
 
-    info = error_ignored(true).execute(state);
+    info = error_rethrown3(true).execute(state);
     System.out.println(info);
   }
 
@@ -380,7 +380,7 @@ public class BasicTests {
     System.out.println(info);
   }
 
-  @Test(expected = FlowExecutionException.class)
+  @Test //(expected = FlowExecutionException.class)
   public void test_flow_nested_error2() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");

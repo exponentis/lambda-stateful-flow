@@ -21,7 +21,7 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
   private TStep nextStep;
   private Consumer<TState> handler;
   private Flow flowHandler;
-  private BiConsumer<TState, Throwable> errorHandler = (c, t) -> DEFAULT_ERROR_HANDLER.accept(t);
+  private BiConsumer<TState, Throwable> errorHandler; // = (c, t) -> DEFAULT_ERROR_HANDLER.accept(t);
   private Function<TState, TRoute> router;
   private Map<TRoute, Consumer<TState>> routeHandlerMap = new HashMap<>();
   private Map<TRoute, TStep> routeTargetMap = new HashMap<TRoute, TStep>();
@@ -67,54 +67,67 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
     executionInfo.setStartTime(Instant.now());
     executionInfo.setStep(state);
 
+    boolean isComplete = true;
+
     try {
       if(router != null) {
         TRoute route = router.apply(context);
+        executionInfo.setNextStep(routeTargetMap.get(route));
         executionInfo.setRoute(route);
         Consumer<TState> routeHandler = routeHandlerMap.get(route);
         if(routeHandler != null) {
-          try {
-          routeHandler.accept(context);
-          } catch(Throwable error) {
-            handleError(context, executionInfo, error);
+          if(errorHandler != null) {
+            try {
+              routeHandler.accept(context);
+            } catch(Throwable error) {
+              errorHandler.accept(context, error);
+            }
+          } else {
+            routeHandler.accept(context);
           }
         }
-        executionInfo.setNextStep(routeTargetMap.get(route));
+        //executionInfo.setNextStep(routeTargetMap.get(route));
       } else {
+        executionInfo.setNextStep(nextStep);
         if(handler != null) {
-          try {
-          handler.accept(context);
-          } catch(Throwable error) {
-            handleError(context, executionInfo, error);
+          if(errorHandler != null) {
+            try {
+              handler.accept(context);
+            } catch(Throwable error) {
+              errorHandler.accept(context, error);
+            }
+          } else {
+            handler.accept(context);
           }
         } else if(flowHandler != null) {
-          try {
-          FlowExecutionInfo<TState, TStep, TRoute> stepExecutionInfo = flowHandler.execute(context);
-          executionInfo.addChildExecutionInfo(stepExecutionInfo);
-          } catch(Throwable error) {
-            handleError(context, executionInfo, error);
+          if(errorHandler != null) {
+            try {
+              FlowExecutionInfo<TState, TStep, TRoute> stepExecutionInfo = flowHandler.execute(context);
+              executionInfo.addChildExecutionInfo(stepExecutionInfo);
+              isComplete = isComplete && stepExecutionInfo.isComplete();
+            } catch(Throwable error) {
+              errorHandler.accept(context, error);
+            }
+          } else {
+            FlowExecutionInfo<TState, TStep, TRoute> stepExecutionInfo = flowHandler.execute(context);
+            executionInfo.addChildExecutionInfo(stepExecutionInfo);
+            isComplete = isComplete && stepExecutionInfo.isComplete();
           }
         }
-        executionInfo.setNextStep(nextStep);
+        //executionInfo.setNextStep(nextStep);
       }
 
-      executionInfo.setComplete(true);
+      executionInfo.setComplete(isComplete);
       executionInfo.setEndTime(Instant.now());
 
     } catch(Throwable error) {
-      handleError(context, executionInfo, error);
+      executionInfo.setError(error);
+      if(errorHandler != null) {
+        errorHandler.accept(context, error);
+      }
     }
 
     executionInfo.setEndTime(Instant.now());
     return executionInfo;
-  }
-
-  private void handleError(TState context, FlowExecutionInfoImpl<TState, TStep, TRoute> executionInfo, Throwable error) {
-    if(errorHandler != null) {
-      errorHandler.accept(context, error);
-    }
-    else {
-      executionInfo.setError(error);
-    }
   }
 }

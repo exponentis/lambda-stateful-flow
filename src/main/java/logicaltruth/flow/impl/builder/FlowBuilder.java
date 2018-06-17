@@ -162,13 +162,13 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
     return onError((c, t) -> errorHandler.accept(t));
   }
 
-  //@Override
-  private AfterOnError<TState, TStep, TRoute> onErrorThrow() {
+  @Override
+  public AfterOnError<TState, TStep, TRoute> onErrorThrow() {
     return onError(SimpleFlowStep.DEFAULT_ERROR_HANDLER);
   }
 
-  @Override
+/*  @Override
   public AfterOnError<TState, TStep, TRoute> onErrorIgnore() {
     return onError((BiConsumer<TState, Throwable>) null);
-  }
+  }*/
 }

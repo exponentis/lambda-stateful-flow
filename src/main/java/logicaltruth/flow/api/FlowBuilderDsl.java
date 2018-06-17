@@ -52,8 +52,8 @@ public interface FlowBuilderDsl {
   interface OnError<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
     AfterOnError<TState, TStep, TRoute> onError(BiConsumer<TState, Throwable> errorHandler);
     AfterOnError<TState, TStep, TRoute> onError(Consumer<Throwable> errorHandler);
-    //AfterOnError<TState, TStep, TRoute> onErrorThrow();
-    AfterOnError<TState, TStep, TRoute> onErrorIgnore();
+    AfterOnError<TState, TStep, TRoute> onErrorThrow();
+    //AfterOnError<TState, TStep, TRoute> onErrorIgnore();
   }
 
   interface Build<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
