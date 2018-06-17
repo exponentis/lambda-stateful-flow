@@ -6,7 +6,7 @@ import org.junit.Test;
 public class CreditTests {
 
   @Test
-  public void test_conditionals_complete_flow() {
+  public void test_valid_input_flow() {
     CreditService.CreditFlowState state = new CreditService.CreditFlowState();
     state.setCustomerId("John");
 
@@ -18,7 +18,7 @@ public class CreditTests {
   }
 
   @Test
-  public void test_conditionals_incomplete_flow() {
+  public void test_invalid_input_flow() {
     CreditService.CreditFlowState state = new CreditService.CreditFlowState();
     state.setCustomerId("");
 

@@ -12,18 +12,33 @@ public class CreditService {
 
   public static final Flow<CreditFlowState, CREDIT_STEPS, CREDIT_ROUTES> creditDecisionFlow = FlowBuilder.<CreditFlowState, CREDIT_STEPS, CREDIT_ROUTES>
     start("CREDIT_DECISION", VALIDATE_INPUT).choice(state -> validateUserName(state.getCustomerId()) ? VALID_INPUT : INVALID_INPUT)
-    .when(VALID_INPUT).next(GET_USER_INFO)
-    .when(INVALID_INPUT).next(FINISH)
+      .when(VALID_INPUT).next(GET_USER_INFO)
+      .when(INVALID_INPUT).next(FINISH)
     .in(GET_USER_INFO).execute(state -> {
       Customer customer = getCustomer(state.getCustomerId());
       state.setCustomer(customer);
     }).next(GET_USER_CREDIT_SCORE)
-    .in(GET_USER_CREDIT_SCORE).extract(CreditFlowState::getCustomer).thenExecute(CreditService::populateCreditScore).next(MAKE_DECISION)
-    .in(MAKE_DECISION).extract(CreditFlowState::getCustomer).thenExecute(CreditService::makeDecision).merge((d, state) -> state.setCreditDecision((Boolean) d)).next(FINISH)
+    .in(GET_USER_CREDIT_SCORE).extract(CreditFlowState::getCustomer).thenExecute(CreditService::populateCreditScore).next(ANALYZE_CREDIT_SCORE)
+    .in(ANALYZE_CREDIT_SCORE).choice(state -> analyzeScore(state.getCustomer().getCreditScore()))
+      .when(CREDIT_LOW).next(CREDIT_STEPS.DECISION_REJECT)
+      .when(CREDIT_HIGH).next(CREDIT_STEPS.DECISION_APPROVE)
+      .when(CREDIT_MEDIUM).next(EXTRA_ASSESMENT)
+    .in(EXTRA_ASSESMENT).extract(CreditFlowState::getCustomer).thenExecute(CreditService::makeDecision).merge((d, state) -> state.setCreditDecision((Boolean) d)).next(FINISH)
+    .in(DECISION_APPROVE).execute(state -> state.setCreditDecision(true)).next(FINISH)
+    .in(DECISION_REJECT).execute(state -> state.setCreditDecision(false)).next(FINISH)
     .build();
 
+  private static CREDIT_ROUTES analyzeScore(Integer creditScore) {
+    if(creditScore < 350)
+      return CREDIT_ROUTES.CREDIT_LOW;
+    else if(creditScore > 650)
+      return CREDIT_ROUTES.CREDIT_HIGH;
+    else
+      return CREDIT_ROUTES.CREDIT_MEDIUM;
+  }
+
   private static boolean makeDecision(Customer c) {
-    return c.getCreditScore() > 500 ? true : false;
+    return c.getCreditScore() > 350 + new Random().nextInt(300) ? true : false;
   }
 
   private static Customer getCustomer(String userId) {
@@ -45,12 +60,21 @@ public class CreditService {
     VALIDATE_INPUT,
     GET_USER_INFO,
     GET_USER_CREDIT_SCORE,
-    MAKE_DECISION,
+    ANALYZE_CREDIT_SCORE,
+    EXTRA_ASSESMENT,
+    DECISION_APPROVE,
+    DECISION_REJECT,
     FINISH
   }
 
   enum CREDIT_ROUTES {
-    VALID_INPUT(VALIDATE_INPUT), INVALID_INPUT(VALIDATE_INPUT);
+    VALID_INPUT(VALIDATE_INPUT),
+    INVALID_INPUT(VALIDATE_INPUT),
+    CREDIT_LOW(ANALYZE_CREDIT_SCORE),
+    CREDIT_MEDIUM(ANALYZE_CREDIT_SCORE),
+    CREDIT_HIGH(ANALYZE_CREDIT_SCORE),
+    POSITIVE(EXTRA_ASSESMENT),
+    NEGATIVE(EXTRA_ASSESMENT);
 
     CREDIT_ROUTES(CREDIT_STEPS step) {
     }
