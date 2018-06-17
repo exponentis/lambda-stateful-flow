@@ -20,14 +20,19 @@ public interface FlowBuilderDsl {
 
   interface Execute<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
     GoTo<TState, TStep, TRoute> execute(Consumer<TState> h);
+
     GoTo<TState, TStep, TRoute> flow(Flow flow);
+
     <I, O> GoTo<TState, TStep, TRoute> execute(Function<TState, I> pre, BiConsumer<O, TState> post, Function<I, O> h);
+
     <I, O> AfterAdapters<TState, TStep, TRoute> withAdapters(Function<TState, I> pre, BiConsumer<O, TState> post);
+
     <I> AfterExtract<TState, TStep, TRoute> extract(Function<TState, I> pre);
   }
 
   interface AfterExtract<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
     <I> GoTo<TState, TStep, TRoute> thenExecute(Consumer<I> h);
+
     <I, O> AfterExecuteFunction<TState, TStep, TRoute> thenExecute(Function<I, O> h);
   }
 
@@ -51,7 +56,9 @@ public interface FlowBuilderDsl {
 
   interface OnError<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
     AfterOnError<TState, TStep, TRoute> onError(BiConsumer<TState, Throwable> errorHandler);
+
     AfterOnError<TState, TStep, TRoute> onError(Consumer<Throwable> errorHandler);
+
     AfterOnError<TState, TStep, TRoute> onErrorThrow();
     //AfterOnError<TState, TStep, TRoute> onErrorIgnore();
   }

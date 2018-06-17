@@ -1,6 +1,7 @@
 package logicaltruth.flow.impl.builder;
 
 import logicaltruth.flow.api.Flow;
+
 import static logicaltruth.flow.api.FlowBuilderDsl.*;
 
 import logicaltruth.flow.impl.SimpleFlow;
@@ -124,7 +125,8 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
   @Override
   public <I> AfterExtract<TState, TStep, TRoute> extract(Function<TState, I> pre) {
     inputAdapter = pre;
-    outputAdapter = (i, c) -> {};
+    outputAdapter = (i, c) -> {
+    };
     return this;
   }
 
@@ -143,7 +145,7 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
   }
 
   @Override
-  public <I,O> GoTo<TState, TStep, TRoute> merge(BiConsumer<O, TState> outputAdapter) {
+  public <I, O> GoTo<TState, TStep, TRoute> merge(BiConsumer<O, TState> outputAdapter) {
     return execute((Function<TState, I>) inputAdapter, outputAdapter, (Function<I, O>) functionHandler);
   }
 

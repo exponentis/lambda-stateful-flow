@@ -4,6 +4,7 @@ import logicaltruth.flow.api.Flow;
 import logicaltruth.flow.api.FlowExecutionInfo;
 import logicaltruth.flow.impl.FlowExecutionException;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import logicaltruth.flow.impl.builder.FlowBuilder;
@@ -116,7 +117,9 @@ public class BasicTests {
       .in(GENERIC_STEPS.B).execute(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         printIntegerSquare.execute((Integer) c.get("output"));
-      }).next(GENERIC_STEPS.C).onError((c, t) -> { throw new FlowExecutionException(t); })
+      }).next(GENERIC_STEPS.C).onError((c, t) -> {
+        throw new FlowExecutionException(t);
+      })
       .build();
   }
 
@@ -129,7 +132,9 @@ public class BasicTests {
       .in(GENERIC_STEPS.B).execute(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         printIntegerSquare.execute((Integer) c.get("output"));
-      }).next(GENERIC_STEPS.C).onError(t -> { throw new FlowExecutionException(t); })
+      }).next(GENERIC_STEPS.C).onError(t -> {
+        throw new FlowExecutionException(t);
+      })
       .build();
   }
 
@@ -160,7 +165,9 @@ public class BasicTests {
   }
 
   private Flow<Integer, GENERIC_STEPS, EMPTY> printIntegerSquareWithError = FlowBuilder.<Integer, GENERIC_STEPS, EMPTY>
-    start("SQUARE", GENERIC_STEPS.A).execute(c -> {throw new RuntimeException("OOPS");}).next(GENERIC_STEPS.B)
+    start("SQUARE", GENERIC_STEPS.A).execute(c -> {
+    throw new RuntimeException("OOPS");
+  }).next(GENERIC_STEPS.B)
     .build();
 
   Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
@@ -173,13 +180,13 @@ public class BasicTests {
     .build();
 
   Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error_ignored = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
-      start("NESTED", GENERIC_STEPS.X).execute(c -> {
-      String s = (String) c.get("input");
-      c.put("output", s.length());
-    }).next(GENERIC_STEPS.Y)
-      .in(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
+    start("NESTED", GENERIC_STEPS.X).execute(c -> {
+    String s = (String) c.get("input");
+    c.put("output", s.length());
+  }).next(GENERIC_STEPS.Y)
+    .in(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
     .next(GENERIC_STEPS.Z) //.onErrorIgnore()
-      .build();
+    .build();
 
   Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error_handled = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
     start("NESTED", GENERIC_STEPS.X).execute(c -> {
