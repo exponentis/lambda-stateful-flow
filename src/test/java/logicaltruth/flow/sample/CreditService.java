@@ -11,7 +11,7 @@ import static logicaltruth.flow.sample.CreditService.CREDIT_STEPS.*;
 public class CreditService {
 
   public static final Flow<CreditFlowState, CREDIT_STEPS, CREDIT_ROUTES> creditDecisionFlow = FlowBuilder.<CreditFlowState, CREDIT_STEPS, CREDIT_ROUTES>
-    start("CREDIT_DECISION", VALIDATE_INPUT).choice(state -> validateUserName((String) state.getCustomerId()) ? VALID_INPUT : INVALID_INPUT)
+    start("CREDIT_DECISION", VALIDATE_INPUT).choice(state -> validateUserName(state.getCustomerId()) ? VALID_INPUT : INVALID_INPUT)
     .when(VALID_INPUT).next(GET_USER_INFO)
     .when(INVALID_INPUT).next(FINISH)
     .in(GET_USER_INFO).execute(state -> {
