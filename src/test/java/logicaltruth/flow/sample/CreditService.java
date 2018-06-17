@@ -23,7 +23,10 @@ public class CreditService {
       .when(CREDIT_LOW).next(CREDIT_STEPS.DECISION_REJECT)
       .when(CREDIT_HIGH).next(CREDIT_STEPS.DECISION_APPROVE)
       .when(CREDIT_MEDIUM).next(EXTRA_ASSESMENT)
-    .in(EXTRA_ASSESMENT).extract(CreditFlowState::getCustomer).thenExecute(CreditService::makeDecision).merge((d, state) -> state.setCreditDecision((Boolean) d)).next(FINISH)
+    .in(EXTRA_ASSESMENT).extract(CreditFlowState::getCustomer).thenExecute(CreditService::makeAssesment).merge((d, state) -> state.setExtraAssesmentResult((Boolean) d)).next(MAKE_DECISION)
+    .in(MAKE_DECISION).choice(state -> state.getExtraAssesmentResult() ? ASSESMENT_POSITIVE : ASSESMENT_NEGATIVE)
+      .when(ASSESMENT_NEGATIVE).next(CREDIT_STEPS.DECISION_REJECT)
+      .when(ASSESMENT_POSITIVE).next(CREDIT_STEPS.DECISION_APPROVE)
     .in(DECISION_APPROVE).execute(state -> state.setCreditDecision(true)).next(FINISH)
     .in(DECISION_REJECT).execute(state -> state.setCreditDecision(false)).next(FINISH)
     .build();
@@ -37,7 +40,7 @@ public class CreditService {
       return CREDIT_ROUTES.CREDIT_MEDIUM;
   }
 
-  private static boolean makeDecision(Customer c) {
+  private static boolean makeAssesment(Customer c) {
     return c.getCreditScore() > 350 + new Random().nextInt(300) ? true : false;
   }
 
@@ -62,6 +65,7 @@ public class CreditService {
     GET_USER_CREDIT_SCORE,
     ANALYZE_CREDIT_SCORE,
     EXTRA_ASSESMENT,
+    MAKE_DECISION,
     DECISION_APPROVE,
     DECISION_REJECT,
     FINISH
@@ -73,8 +77,8 @@ public class CreditService {
     CREDIT_LOW(ANALYZE_CREDIT_SCORE),
     CREDIT_MEDIUM(ANALYZE_CREDIT_SCORE),
     CREDIT_HIGH(ANALYZE_CREDIT_SCORE),
-    POSITIVE(EXTRA_ASSESMENT),
-    NEGATIVE(EXTRA_ASSESMENT);
+    ASSESMENT_POSITIVE(EXTRA_ASSESMENT),
+    ASSESMENT_NEGATIVE(EXTRA_ASSESMENT);
 
     CREDIT_ROUTES(CREDIT_STEPS step) {
     }
@@ -83,6 +87,7 @@ public class CreditService {
   public static class CreditFlowState {
     private String customerId;
     private Customer customer;
+    private Boolean extraAssesmentResult;
     private Boolean creditDecision;
 
     public String getCustomerId() {
@@ -107,6 +112,14 @@ public class CreditService {
 
     public void setCreditDecision(Boolean creditDecision) {
       this.creditDecision = creditDecision;
+    }
+
+    public Boolean getExtraAssesmentResult() {
+      return extraAssesmentResult;
+    }
+
+    public void setExtraAssesmentResult(Boolean extraAssesmentResult) {
+      this.extraAssesmentResult = extraAssesmentResult;
     }
   }
 }
