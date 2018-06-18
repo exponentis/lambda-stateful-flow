@@ -35,17 +35,17 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
 
   public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> AfterIn<TState, TStep, TRoute> start(String name, TStep initialState) {
     FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>(name, initialState);
-    flowBuilder.in(initialState);
+    flowBuilder.step(initialState);
     return flowBuilder;
   }
 
   public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> AfterIn<TState, TStep, TRoute> start(TStep initialState) {
     FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>("", initialState);
-    flowBuilder.in(initialState);
+    flowBuilder.step(initialState);
     return flowBuilder;
   }
 
-  public AfterIn<TState, TStep, TRoute> in(TStep state) {
+  public AfterIn<TState, TStep, TRoute> step(TStep state) {
     addStep(state);
     currentStep = state;
     currentRoute = null;

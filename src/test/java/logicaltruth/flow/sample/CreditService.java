@@ -14,21 +14,21 @@ public class CreditService {
     start("CREDIT_DECISION", VALIDATE_INPUT).choice(state -> validateUserName(state.getCustomerId()) ? VALID_INPUT : INVALID_INPUT)
       .when(VALID_INPUT).next(GET_CUSTOMER_INFO)
       .when(INVALID_INPUT).next(FINISH)
-    .in(GET_CUSTOMER_INFO).execute(state -> {
+    .step(GET_CUSTOMER_INFO).execute(state -> {
       Customer customer = getCustomer(state.getCustomerId());
       state.setCustomer(customer);
     }).next(GET_CUSTOMER_CREDIT_SCORE)
-    .in(GET_CUSTOMER_CREDIT_SCORE).extract(CreditFlowState::getCustomer).thenExecute(CreditService::populateCreditScore).next(ANALYZE_CREDIT_SCORE)
-    .in(ANALYZE_CREDIT_SCORE).choice(state -> analyzeScore(state.getCustomer().getCreditScore()))
+    .step(GET_CUSTOMER_CREDIT_SCORE).extract(CreditFlowState::getCustomer).thenExecute(CreditService::populateCreditScore).next(ANALYZE_CREDIT_SCORE)
+    .step(ANALYZE_CREDIT_SCORE).choice(state -> analyzeScore(state.getCustomer().getCreditScore()))
       .when(CREDIT_LOW).next(DECISION_REJECT)
       .when(CREDIT_HIGH).next(DECISION_APPROVE)
       .when(CREDIT_MEDIUM).next(EXTRA_ASSESMENT)
-    .in(EXTRA_ASSESMENT).extract(CreditFlowState::getCustomer).thenExecute(CreditService::makeAssesment).merge((d, state) -> state.setExtraAssesmentResult((Boolean) d)).next(MAKE_DECISION)
-    .in(MAKE_DECISION).choice(state -> state.getExtraAssesmentResult() ? ASSESMENT_POSITIVE : ASSESMENT_NEGATIVE)
+    .step(EXTRA_ASSESMENT).extract(CreditFlowState::getCustomer).thenExecute(CreditService::makeAssesment).merge((d, state) -> state.setExtraAssesmentResult((Boolean) d)).next(MAKE_DECISION)
+    .step(MAKE_DECISION).choice(state -> state.getExtraAssesmentResult() ? ASSESMENT_POSITIVE : ASSESMENT_NEGATIVE)
       .when(ASSESMENT_NEGATIVE).next(DECISION_REJECT)
       .when(ASSESMENT_POSITIVE).next(DECISION_APPROVE)
-    .in(DECISION_APPROVE).execute(state -> state.setCreditDecision(true)).next(FINISH)
-    .in(DECISION_REJECT).execute(state -> state.setCreditDecision(false)).next(FINISH)
+    .step(DECISION_APPROVE).execute(state -> state.setCreditDecision(true)).next(FINISH)
+    .step(DECISION_REJECT).execute(state -> state.setCreditDecision(false)).next(FINISH)
     .build();
 
   private static CREDIT_ROUTES analyzeScore(Integer creditScore) {

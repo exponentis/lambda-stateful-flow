@@ -7,7 +7,7 @@ import java.util.function.Function;
 public interface FlowBuilderDsl {
 
   interface In<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
-    AfterIn<TState, TStep, TRoute> in(TStep state);
+    AfterIn<TState, TStep, TRoute> step(TStep state);
   }
 
   interface Route<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {

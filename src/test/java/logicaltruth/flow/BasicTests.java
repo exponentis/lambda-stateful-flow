@@ -34,7 +34,7 @@ public class BasicTests {
     String s = (String) c.get("input");
     c.put("output", s.length());
   }).next(GENERIC_STEPS.B)
-    .in(GENERIC_STEPS.B).execute(c -> printIntegerSquare.execute((Integer) c.get("output"))).next(GENERIC_STEPS.C)
+    .step(GENERIC_STEPS.B).execute(c -> printIntegerSquare.execute((Integer) c.get("output"))).next(GENERIC_STEPS.C)
     .build();
 
   Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
@@ -42,7 +42,7 @@ public class BasicTests {
     String s = (String) c.get("input");
     c.put("output", s.length());
   }).next(GENERIC_STEPS.Y)
-    .in(GENERIC_STEPS.Y).flow(printIntegerSquare.<Map>with(c -> ((String) c.get("input")).length())).next(GENERIC_STEPS.Z)
+    .step(GENERIC_STEPS.Y).flow(printIntegerSquare.<Map>with(c -> ((String) c.get("input")).length())).next(GENERIC_STEPS.Z)
     .build();
 
   Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> extract = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
@@ -75,7 +75,7 @@ public class BasicTests {
       if(withError1) throw new RuntimeException(("ERROR"));
       c.put("output", s.length());
     }).next(GENERIC_STEPS.B)
-      .in(GENERIC_STEPS.B).execute(c -> {
+      .step(GENERIC_STEPS.B).execute(c -> {
         if(withError2) throw new RuntimeException(("ERROR"));
         printIntegerSquare.execute((Integer) c.get("output"));
       }).next(GENERIC_STEPS.C)
@@ -89,7 +89,7 @@ public class BasicTests {
       if(withError) throw new RuntimeException(("ERROR"));
       c.put("output", s.length());
     }).next(GENERIC_STEPS.B).onError((c, t) -> c.put("output", 1000))
-      .in(GENERIC_STEPS.B).execute(c -> {
+      .step(GENERIC_STEPS.B).execute(c -> {
         printIntegerSquare.execute((Integer) c.get("output"));
       }).next(GENERIC_STEPS.C)
       .build();
@@ -101,7 +101,7 @@ public class BasicTests {
       String s = (String) c.get("input");
       c.put("output", s.length());
     }).next(GENERIC_STEPS.B)
-      .in(GENERIC_STEPS.B).execute(c -> {
+      .step(GENERIC_STEPS.B).execute(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         printIntegerSquare.execute((Integer) c.get("output"));
       }).next(GENERIC_STEPS.C).onError((c, t) -> System.out.println(t))
@@ -114,7 +114,7 @@ public class BasicTests {
       String s = (String) c.get("input");
       c.put("output", s.length());
     }).next(GENERIC_STEPS.B)
-      .in(GENERIC_STEPS.B).execute(c -> {
+      .step(GENERIC_STEPS.B).execute(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         printIntegerSquare.execute((Integer) c.get("output"));
       }).next(GENERIC_STEPS.C).onError((c, t) -> {
@@ -129,7 +129,7 @@ public class BasicTests {
       String s = (String) c.get("input");
       c.put("output", s.length());
     }).next(GENERIC_STEPS.B)
-      .in(GENERIC_STEPS.B).execute(c -> {
+      .step(GENERIC_STEPS.B).execute(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         printIntegerSquare.execute((Integer) c.get("output"));
       }).next(GENERIC_STEPS.C).onError(t -> {
@@ -144,7 +144,7 @@ public class BasicTests {
       String s = (String) c.get("input");
       c.put("output", s.length());
     }).next(GENERIC_STEPS.B)
-      .in(GENERIC_STEPS.B).execute(c -> {
+      .step(GENERIC_STEPS.B).execute(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         printIntegerSquare.execute((Integer) c.get("output"));
       }).next(GENERIC_STEPS.C).onErrorThrow()
@@ -157,7 +157,7 @@ public class BasicTests {
       String s = (String) c.get("input");
       c.put("output", s.length());
     }).next(GENERIC_STEPS.Y)
-      .in(GENERIC_STEPS.Y).flow(printIntegerSquare.<Map>with(c -> {
+      .step(GENERIC_STEPS.Y).flow(printIntegerSquare.<Map>with(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         return ((String) c.get("input")).length();
       })).next(GENERIC_STEPS.Z) //.onErrorIgnore()
@@ -175,7 +175,7 @@ public class BasicTests {
     String s = (String) c.get("input");
     c.put("output", s.length());
   }).next(GENERIC_STEPS.Y)
-    .in(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
+    .step(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
     .next(GENERIC_STEPS.Z)
     .build();
 
@@ -184,7 +184,7 @@ public class BasicTests {
     String s = (String) c.get("input");
     c.put("output", s.length());
   }).next(GENERIC_STEPS.Y)
-    .in(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
+    .step(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
     .next(GENERIC_STEPS.Z) //.onErrorIgnore()
     .build();
 
@@ -193,7 +193,7 @@ public class BasicTests {
     String s = (String) c.get("input");
     c.put("output", s.length());
   }).next(GENERIC_STEPS.Y)
-    .in(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
+    .step(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
     .next(GENERIC_STEPS.Z).onError(t -> System.out.println(t))
     .build();
 
