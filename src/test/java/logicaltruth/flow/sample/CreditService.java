@@ -11,7 +11,7 @@ import static logicaltruth.flow.sample.CreditService.CREDIT_STEPS.*;
 public class CreditService {
 
   public static final Flow<CreditFlowState, CREDIT_STEPS, CREDIT_ROUTES> creditDecisionFlow = FlowBuilder.<CreditFlowState, CREDIT_STEPS, CREDIT_ROUTES>
-    start("CREDIT_DECISION", VALIDATE_INPUT).choice(state -> validateUserName(state.getCustomerId()) ? VALID_INPUT : INVALID_INPUT)
+    start("CREDIT_DECISION", VALIDATE_INPUT).extract(CreditFlowState::getCustomerId).<String>thenEvaluate(s -> validateUserId(s) ? VALID_INPUT : INVALID_INPUT)
       .when(VALID_INPUT).next(GET_CUSTOMER_INFO)
       .when(INVALID_INPUT).next(FINISH)
     .step(GET_CUSTOMER_INFO).execute(state -> {
@@ -19,12 +19,12 @@ public class CreditService {
       state.setCustomer(customer);
     }).next(GET_CUSTOMER_CREDIT_SCORE)
     .step(GET_CUSTOMER_CREDIT_SCORE).extract(CreditFlowState::getCustomer).thenExecute(CreditService::populateCreditScore).next(ANALYZE_CREDIT_SCORE)
-    .step(ANALYZE_CREDIT_SCORE).choice(state -> analyzeScore(state.getCustomer().getCreditScore()))
+    .step(ANALYZE_CREDIT_SCORE).evaluate(state -> analyzeScore(state.getCustomer().getCreditScore()))
       .when(CREDIT_LOW).next(DECISION_REJECT)
       .when(CREDIT_HIGH).next(DECISION_APPROVE)
       .when(CREDIT_MEDIUM).next(EXTRA_ASSESMENT)
     .step(EXTRA_ASSESMENT).extract(CreditFlowState::getCustomer).thenExecute(CreditService::makeAssesment).merge((d, state) -> state.setExtraAssesmentResult((Boolean) d)).next(MAKE_DECISION)
-    .step(MAKE_DECISION).choice(state -> state.getExtraAssesmentResult() ? ASSESMENT_POSITIVE : ASSESMENT_NEGATIVE)
+    .step(MAKE_DECISION).evaluate(state -> state.getExtraAssesmentResult() ? ASSESMENT_POSITIVE : ASSESMENT_NEGATIVE)
       .when(ASSESMENT_NEGATIVE).next(DECISION_REJECT)
       .when(ASSESMENT_POSITIVE).next(DECISION_APPROVE)
     .step(DECISION_APPROVE).execute(state -> state.setCreditDecision(true)).next(FINISH)
@@ -55,7 +55,7 @@ public class CreditService {
     c.setCreditScore(score);
   }
 
-  private static boolean validateUserName(String userName) {
+  private static boolean validateUserId(String userName) {
     return userName != null && !userName.isEmpty();
   }
 

@@ -8,10 +8,13 @@ public interface FlowBuilderDsl {
 
   interface In<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
     AfterIn<TState, TStep, TRoute> step(TStep state);
+    default AfterIn<TState, TStep, TRoute> in(TStep state) {
+      return step(state);
+    }
   }
 
   interface Route<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
-    When<TState, TStep, TRoute> choice(Function<TState, TRoute> router);
+    When<TState, TStep, TRoute> evaluate(Function<TState, TRoute> router);
   }
 
   interface When<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
@@ -20,20 +23,20 @@ public interface FlowBuilderDsl {
 
   interface Execute<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
     GoTo<TState, TStep, TRoute> execute(Consumer<TState> h);
-
     GoTo<TState, TStep, TRoute> flow(Flow flow);
-
     <I, O> GoTo<TState, TStep, TRoute> execute(Function<TState, I> pre, BiConsumer<O, TState> post, Function<I, O> h);
-
     <I, O> AfterAdapters<TState, TStep, TRoute> withAdapters(Function<TState, I> pre, BiConsumer<O, TState> post);
-
     <I> AfterExtract<TState, TStep, TRoute> extract(Function<TState, I> pre);
+  }
+
+  interface OrElse<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
+    GoTo<TState, TStep, TRoute> orElse(Consumer<TState> h);
   }
 
   interface AfterExtract<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
     <I> GoTo<TState, TStep, TRoute> thenExecute(Consumer<I> h);
-
     <I, O> AfterExecuteFunction<TState, TStep, TRoute> thenExecute(Function<I, O> h);
+    <I> When<TState, TStep, TRoute> thenEvaluate(Function<I, TRoute> router);
   }
 
   interface AfterExecuteFunction<TState, TStep extends Enum<?>, TRoute extends Enum<?>> extends
@@ -56,11 +59,8 @@ public interface FlowBuilderDsl {
 
   interface OnError<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
     AfterOnError<TState, TStep, TRoute> onError(BiConsumer<TState, Throwable> errorHandler);
-
     AfterOnError<TState, TStep, TRoute> onError(Consumer<Throwable> errorHandler);
-
     AfterOnError<TState, TStep, TRoute> onErrorThrow();
-    //AfterOnError<TState, TStep, TRoute> onErrorIgnore();
   }
 
   interface Build<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
@@ -80,12 +80,14 @@ public interface FlowBuilderDsl {
   interface AfterGoTo<TState, TStep extends Enum<?>, TRoute extends Enum<?>> extends
     OnError<TState, TStep, TRoute>,
     When<TState, TStep, TRoute>,
+    OrElse<TState, TStep, TRoute>,
     In<TState, TStep, TRoute>,
     Build<TState, TStep, TRoute> {
   }
 
   interface AfterOnError<TState, TStep extends Enum<?>, TRoute extends Enum<?>> extends
     When<TState, TStep, TRoute>,
+    OrElse<TState, TStep, TRoute>,
     In<TState, TStep, TRoute>,
     Build<TState, TStep, TRoute> {
   }
@@ -94,6 +96,7 @@ public interface FlowBuilderDsl {
     In<TState, TStep, TRoute>,
     Route<TState, TStep, TRoute>,
     When<TState, TStep, TRoute>,
+    OrElse<TState, TStep, TRoute>,
     Execute<TState, TStep, TRoute>,
     AfterAdapters<TState, TStep, TRoute>,
     AfterExecuteFunction<TState, TStep, TRoute>,

@@ -21,6 +21,25 @@ public class BasicTests {
   enum EMPTY {
   }
 
+  enum LEVELS {
+    ZERO(0), ONE(1), TWO(2), THREE(3), FOUR(4);
+
+    private Integer value;
+
+    LEVELS(Integer i) {
+      value = i;
+    }
+
+    public static LEVELS fromValue(Integer value) {
+      for (LEVELS l : LEVELS.values()) {
+        if (l.value.equals(value)) {
+          return l;
+        }
+      }
+      return null;
+    }
+  }
+
   Flow<String, GENERIC_STEPS, EMPTY> printStringLength = FlowBuilder.<String, GENERIC_STEPS, EMPTY>
     start("STRLEN", GENERIC_STEPS.A).execute(c -> System.out.println(c.length())).next(GENERIC_STEPS.B)
     .build();
@@ -66,6 +85,13 @@ public class BasicTests {
   Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> chain = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
     start("STEPS", GENERIC_STEPS.A)
     .execute(c -> (String) c.get("input"), (i, c) -> c.put("length", i), s -> s.length()).next(GENERIC_STEPS.B)
+    .build();
+
+  Flow<Integer, GENERIC_STEPS, LEVELS> choice = FlowBuilder.<Integer, GENERIC_STEPS, LEVELS>
+    start("CHOICE", GENERIC_STEPS.A).evaluate(i ->  LEVELS.fromValue(i % 5))
+    .when(LEVELS.ZERO).execute(i -> System.out.println("0")).next(GENERIC_STEPS.X)
+    .when(LEVELS.ONE).execute(i -> System.out.println("1")).next(GENERIC_STEPS.Y)
+    .orElse(i -> System.out.println("2-4")).next(GENERIC_STEPS.Z)
     .build();
 
   Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error(boolean withError1, boolean withError2) {
@@ -268,6 +294,25 @@ public class BasicTests {
     System.out.println(info);
 
     assertEquals(3, state.get("length"));
+  }
+
+
+  @Test
+  public void test_choice() {
+    FlowExecutionInfo info = choice.execute(0);
+    System.out.println(info);
+
+    info = choice.execute(1);
+    System.out.println(info);
+
+    info = choice.execute(2);
+    System.out.println(info);
+
+    info = choice.execute(3);
+    System.out.println(info);
+
+    info = choice.execute(4);
+    System.out.println(info);
   }
 
   @Test //(expected = FlowExecutionException.class)

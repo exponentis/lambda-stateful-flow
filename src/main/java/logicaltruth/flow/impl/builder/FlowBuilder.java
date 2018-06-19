@@ -24,6 +24,8 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
   private TStep currentStep;
   private TRoute currentRoute;
 
+  private Boolean isDefaultRoute = false;
+
   private Function<TState, ?> inputAdapter;
   private Function<?, ?> functionHandler;
   private BiConsumer<?, TState> outputAdapter;
@@ -57,7 +59,7 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
       steps.put(state, new SimpleFlowStep(state));
   }
 
-  public When<TState, TStep, TRoute> choice(Function<TState, TRoute> router) {
+  public When<TState, TStep, TRoute> evaluate(Function<TState, TRoute> router) {
     if(currentStep != null)
       getCurrentStep().setRouter(router);
     return this;
@@ -81,8 +83,11 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
     if(currentRoute != null) {
       getCurrentStep().setRouteTarget(currentRoute, target);
       currentRoute = null;
+    } else if(isDefaultRoute != null) {
+      getCurrentStep().setDefaultRouteTarget(target);
+      isDefaultRoute = false;
     } else {
-      getCurrentStep().setNextStep(target);
+        getCurrentStep().setNextStep(target);
     }
     return this;
   }
@@ -145,6 +150,13 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
   }
 
   @Override
+  public <I> When<TState, TStep, TRoute> thenEvaluate(Function<I, TRoute> router) {
+    if(currentStep != null)
+      getCurrentStep().setRouter(((Function<TState, I>) inputAdapter).andThen(router));
+    return this;
+  }
+
+  @Override
   public <I, O> GoTo<TState, TStep, TRoute> merge(BiConsumer<O, TState> outputAdapter) {
     return execute((Function<TState, I>) inputAdapter, outputAdapter, (Function<I, O>) functionHandler);
   }
@@ -169,8 +181,10 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
     return onError(SimpleFlowStep.DEFAULT_ERROR_HANDLER);
   }
 
-/*  @Override
-  public AfterOnError<TState, TStep, TRoute> onErrorIgnore() {
-    return onError((BiConsumer<TState, Throwable>) null);
-  }*/
+  @Override
+  public GoTo<TState, TStep, TRoute> orElse(Consumer<TState> handler) {
+    isDefaultRoute = true;
+    getCurrentStep().setDefaultRouteHandler(handler);
+    return this;
+  }
 }

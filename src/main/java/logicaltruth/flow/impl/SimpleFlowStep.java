@@ -25,6 +25,8 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
   private Function<TState, TRoute> router;
   private Map<TRoute, Consumer<TState>> routeHandlerMap = new HashMap<>();
   private Map<TRoute, TStep> routeTargetMap = new HashMap<TRoute, TStep>();
+  private Consumer<TState> defaultRouteHandler;
+  private TStep defaultRouteTarget;
 
   public SimpleFlowStep(TStep state) {
     this.state = state;
@@ -44,13 +46,17 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
 
   public void setRouteHandler(TRoute route, Consumer<TState> routeHandler) {
     if(routeHandlerMap.containsKey(route))
-      throw new FlowBuilderException(String.format("Handler for choice: %s step state: %s is already declared", route, state));
+      throw new FlowBuilderException(String.format("Handler for evaluate: %s step state: %s is already declared", route, state));
     routeHandlerMap.put(route, routeHandler);
+  }
+
+  public void setDefaultRouteHandler(Consumer<TState> routeHandler) {
+    this.defaultRouteHandler = routeHandler;
   }
 
   public void setRouteTarget(TRoute route, TStep target) {
     if(routeTargetMap.containsKey(route))
-      throw new FlowBuilderException(String.format("Target for choice: %s step state: %s is already declared", route, state));
+      throw new FlowBuilderException(String.format("Target for evaluate: %s step state: %s is already declared", route, state));
     routeTargetMap.put(route, target);
   }
 
@@ -72,8 +78,13 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
     try {
       if(router != null) {
         TRoute route = router.apply(context);
-        executionInfo.setNextStep(routeTargetMap.get(route));
         executionInfo.setRoute(route);
+          TStep nextStep = routeTargetMap.get(route);
+        if(nextStep != null) {
+          executionInfo.setNextStep(nextStep);
+        } else {
+          executionInfo.setNextStep(defaultRouteTarget);
+        }
         Consumer<TState> routeHandler = routeHandlerMap.get(route);
         if(routeHandler != null) {
           if(errorHandler != null) {
@@ -84,6 +95,14 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
             }
           } else {
             routeHandler.accept(context);
+          }
+        } else {
+          if(defaultRouteHandler != null) {
+            try {
+              defaultRouteHandler.accept(context);
+            } catch(Throwable error) {
+              errorHandler.accept(context, error);
+            }
           }
         }
         //executionInfo.setNextStep(routeTargetMap.get(route));
@@ -129,5 +148,9 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
 
     executionInfo.setEndTime(Instant.now());
     return executionInfo;
+  }
+
+  public void setDefaultRouteTarget(TStep target) {
+    defaultRouteTarget = target;
   }
 }
