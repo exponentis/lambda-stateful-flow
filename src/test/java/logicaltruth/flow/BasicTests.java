@@ -315,7 +315,7 @@ public class BasicTests {
     System.out.println(info);
   }
 
-  @Test //(expected = FlowExecutionException.class)
+  @Test
   public void test_flow_error1() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");
@@ -328,7 +328,7 @@ public class BasicTests {
     System.out.println(info);
   }
 
-  @Test //(expected = FlowExecutionException.class)
+  @Test
   public void test_flow_error2() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");
@@ -341,7 +341,7 @@ public class BasicTests {
     System.out.println(info);
   }
 
-  @Test //(expected = FlowExecutionException.class)
+  @Test
   public void test_flow_error3() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");
