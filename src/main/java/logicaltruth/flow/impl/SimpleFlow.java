@@ -5,17 +5,25 @@ import logicaltruth.flow.api.FlowExecutionInfo;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.function.Function;
 
-public class SimpleFlow<TState, TStep extends Enum<?>, TRoute extends Enum<?>> implements //extends SimpleFlowStep<TState, TStep, TRoute>
+public class SimpleFlow<TState, TStep extends Enum<?>, TRoute extends Enum<?>> implements
   Flow<TState, TStep, TRoute> {
 
-  private final TStep initialStep;
+  private TStep initialStep;
+  private Function<TState, TStep> initialRouter;
   private String name;
   private Map<TStep, SimpleFlowStep> steps;
 
   public SimpleFlow(String name, TStep initialStep, Map<TStep, SimpleFlowStep> steps) {
     this.name = name;
     this.initialStep = initialStep;
+    this.steps = steps;
+  }
+
+  public SimpleFlow(String name, Function<TState, TStep> initialRouter, Map<TStep, SimpleFlowStep> steps) {
+    this.name = name;
+    this.initialRouter = initialRouter;
     this.steps = steps;
   }
 
@@ -26,6 +34,10 @@ public class SimpleFlow<TState, TStep extends Enum<?>, TRoute extends Enum<?>> i
     flowExecutionInfo.seTState(context);
 
     TStep step = initialStep;
+
+    if(step == null && initialRouter != null) {
+      step = initialRouter.apply(context);
+    }
 
     boolean isComplete = true;
     while(step != null) {

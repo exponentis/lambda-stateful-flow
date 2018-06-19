@@ -40,15 +40,15 @@ public class BasicTests {
     }
   }
 
-  Flow<String, GENERIC_STEPS, EMPTY> printStringLength = FlowBuilder.<String, GENERIC_STEPS, EMPTY>
+  static final Flow<String, GENERIC_STEPS, EMPTY> printStringLength = FlowBuilder.<String, GENERIC_STEPS, EMPTY>
     start("STRLEN", GENERIC_STEPS.A).execute(c -> System.out.println(c.length())).next(GENERIC_STEPS.B)
     .build();
 
-  Flow<Integer, GENERIC_STEPS, EMPTY> printIntegerSquare = FlowBuilder.<Integer, GENERIC_STEPS, EMPTY>
+  static final Flow<Integer, GENERIC_STEPS, EMPTY> printIntegerSquare = FlowBuilder.<Integer, GENERIC_STEPS, EMPTY>
     start("SQUARE", GENERIC_STEPS.A).execute(c -> System.out.println(c * c)).next(GENERIC_STEPS.B)
     .build();
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> steps = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> steps = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
     start("STEPS", GENERIC_STEPS.X).execute(c -> {
     String s = (String) c.get("input");
     c.put("output", s.length());
@@ -56,7 +56,7 @@ public class BasicTests {
     .step(GENERIC_STEPS.Y).execute(c -> printIntegerSquare.execute((Integer) c.get("output"))).next(GENERIC_STEPS.Z)
     .build();
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
     start("NESTED", GENERIC_STEPS.X).execute(c -> {
     String s = (String) c.get("input");
     c.put("output", s.length());
@@ -64,37 +64,37 @@ public class BasicTests {
     .step(GENERIC_STEPS.Y).flow(printIntegerSquare.<Map>with(c -> (Integer) c.get("output"))).next(GENERIC_STEPS.Z)
     .build();
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> extract = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> extract = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
     start("STEPS", GENERIC_STEPS.A)
     .extract(c -> (String) c.get("input"))
     .<String>thenExecute(s -> System.out.println(s.length())).next(GENERIC_STEPS.B)
     .build();
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> merge = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> merge = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
     start("STEPS", GENERIC_STEPS.A)
     .extract(c -> (String) c.get("input"))
     .<String, Integer>thenExecute(s -> s.length())
     .merge((i, c) -> c.put("length", i)).next(GENERIC_STEPS.B)
     .build();
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> adapters = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> adapters = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
     start("STEPS", GENERIC_STEPS.A)
     .withAdapters(c -> (String) c.get("input"), (i, c) -> c.put("length", i)).<String, Integer>execute(s -> s.length()).next(GENERIC_STEPS.B)
     .build();
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> chain = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> chain = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
     start("STEPS", GENERIC_STEPS.A)
     .execute(c -> (String) c.get("input"), (i, c) -> c.put("length", i), s -> s.length()).next(GENERIC_STEPS.B)
     .build();
 
-  Flow<Integer, GENERIC_STEPS, LEVELS> choice = FlowBuilder.<Integer, GENERIC_STEPS, LEVELS>
+  static final Flow<Integer, GENERIC_STEPS, LEVELS> choice = FlowBuilder.<Integer, GENERIC_STEPS, LEVELS>
     start("CHOICE", GENERIC_STEPS.A).evaluate(i ->  LEVELS.fromValue(i % 5))
     .when(LEVELS.ZERO).execute(i -> System.out.println("0")).next(GENERIC_STEPS.X)
     .when(LEVELS.ONE).execute(i -> System.out.println("1")).next(GENERIC_STEPS.Y)
     .orElse(i -> System.out.println("2-4")).next(GENERIC_STEPS.Z)
     .build();
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error(boolean withError1, boolean withError2) {
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error(boolean withError1, boolean withError2) {
     return FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
       start("STEPS", GENERIC_STEPS.A).execute(c -> {
       String s = (String) c.get("input");
@@ -108,7 +108,7 @@ public class BasicTests {
       .build();
   }
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_handled1(boolean withError) {
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_handled1(boolean withError) {
     return FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
       start("STEPS", GENERIC_STEPS.A).execute(c -> {
       String s = (String) c.get("input");
@@ -121,7 +121,7 @@ public class BasicTests {
       .build();
   }
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_handled2(boolean withError) {
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_handled2(boolean withError) {
     return FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
       start("STEPS", GENERIC_STEPS.A).execute(c -> {
       String s = (String) c.get("input");
@@ -134,7 +134,7 @@ public class BasicTests {
       .build();
   }
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_rethrown1(boolean withError) {
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_rethrown1(boolean withError) {
     return FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
       start("STEPS", GENERIC_STEPS.A).execute(c -> {
       String s = (String) c.get("input");
@@ -149,7 +149,7 @@ public class BasicTests {
       .build();
   }
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_rethrown2(boolean withError) {
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_rethrown2(boolean withError) {
     return FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
       start("STEPS", GENERIC_STEPS.A).execute(c -> {
       String s = (String) c.get("input");
@@ -164,7 +164,7 @@ public class BasicTests {
       .build();
   }
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_rethrown3(boolean withError) {
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> error_rethrown3(boolean withError) {
     return FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
       start("STEPS", GENERIC_STEPS.A).execute(c -> {
       String s = (String) c.get("input");
@@ -177,7 +177,7 @@ public class BasicTests {
       .build();
   }
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error(boolean withError) {
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error(boolean withError) {
     return FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
       start("NESTED", GENERIC_STEPS.X).execute(c -> {
       String s = (String) c.get("input");
@@ -186,17 +186,17 @@ public class BasicTests {
       .step(GENERIC_STEPS.Y).flow(printIntegerSquare.<Map>with(c -> {
         if(withError) throw new RuntimeException(("ERROR"));
         return ((String) c.get("input")).length();
-      })).next(GENERIC_STEPS.Z) //.onErrorIgnore()
+      })).next(GENERIC_STEPS.Z)
       .build();
   }
 
-  private Flow<Integer, GENERIC_STEPS, EMPTY> printIntegerSquareWithError = FlowBuilder.<Integer, GENERIC_STEPS, EMPTY>
+  static final private Flow<Integer, GENERIC_STEPS, EMPTY> printIntegerSquareWithError = FlowBuilder.<Integer, GENERIC_STEPS, EMPTY>
     start("SQUARE", GENERIC_STEPS.A).execute(c -> {
     throw new RuntimeException("OOPS");
   }).next(GENERIC_STEPS.B)
     .build();
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
     start("NESTED", GENERIC_STEPS.X).execute(c -> {
     String s = (String) c.get("input");
     c.put("output", s.length());
@@ -205,16 +205,16 @@ public class BasicTests {
     .next(GENERIC_STEPS.Z)
     .build();
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error_ignored = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error_ignored = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
     start("NESTED", GENERIC_STEPS.X).execute(c -> {
     String s = (String) c.get("input");
     c.put("output", s.length());
   }).next(GENERIC_STEPS.Y)
     .step(GENERIC_STEPS.Y).flow(printIntegerSquareWithError.<Map>with(c -> ((String) c.get("input")).length()))
-    .next(GENERIC_STEPS.Z) //.onErrorIgnore()
+    .next(GENERIC_STEPS.Z)
     .build();
 
-  Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error_handled = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
+  static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested_error_handled = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
     start("NESTED", GENERIC_STEPS.X).execute(c -> {
     String s = (String) c.get("input");
     c.put("output", s.length());
@@ -432,7 +432,7 @@ public class BasicTests {
     System.out.println(info);
   }
 
-  @Test //(expected = FlowExecutionException.class)
+  @Test
   public void test_flow_nested_error2() {
     Map<String, Object> state = new HashMap<String, Object>() {{
       put("input", "Hello world");

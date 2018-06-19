@@ -1,5 +1,6 @@
 package logicaltruth.flow.impl.builder;
 
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import logicaltruth.flow.api.Flow;
 
 import static logicaltruth.flow.api.FlowBuilderDsl.*;
@@ -17,7 +18,8 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
 
   //builder outcome
   private final String name;
-  private final TStep initialState;
+  private TStep initialState = null;
+  private Function<TState, TStep> initialRouter = null;
   private final Map<TStep, SimpleFlowStep> steps = new HashMap<>();
 
   //temp state
@@ -35,9 +37,19 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
     this.initialState = initialState;
   }
 
+  private FlowBuilder(final String name, final Function<TState, TStep> initialRouter) {
+    this.name = name;
+    this.initialRouter = initialRouter;
+  }
+
   public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> AfterIn<TState, TStep, TRoute> start(String name, TStep initialState) {
     FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>(name, initialState);
     flowBuilder.step(initialState);
+    return flowBuilder;
+  }
+
+  public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> AfterIn<TState, TStep, TRoute> start(String name, Function<TState, TStep> initialRouter) {
+    FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>(name, initialRouter);
     return flowBuilder;
   }
 
@@ -162,7 +174,11 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
   }
 
   public Flow<TState, TStep, TRoute> build() {
-    return new SimpleFlow(name, initialState, steps);
+    if(initialState != null)
+      return new SimpleFlow(name, initialState, steps);
+    if(initialRouter != null)
+      return new SimpleFlow(name, initialRouter, steps);
+    throw new FlowBuilderException("Cannot build flow");
   }
 
   @Override
