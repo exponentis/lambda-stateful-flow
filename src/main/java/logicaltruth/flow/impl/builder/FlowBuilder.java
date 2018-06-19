@@ -83,11 +83,11 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
     if(currentRoute != null) {
       getCurrentStep().setRouteTarget(currentRoute, target);
       currentRoute = null;
-    } else if(isDefaultRoute != null) {
+    } else if(isDefaultRoute) {
       getCurrentStep().setDefaultRouteTarget(target);
       isDefaultRoute = false;
     } else {
-        getCurrentStep().setNextStep(target);
+      getCurrentStep().setNextStep(target);
     }
     return this;
   }

@@ -60,6 +60,11 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
     routeTargetMap.put(route, target);
   }
 
+
+  public void setDefaultRouteTarget(TStep target) {
+    defaultRouteTarget = target;
+  }
+
   public void setNextStep(TStep nextStep) {
     this.nextStep = nextStep;
   }
@@ -79,10 +84,10 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
       if(router != null) {
         TRoute route = router.apply(context);
         executionInfo.setRoute(route);
-          TStep nextStep = routeTargetMap.get(route);
+        TStep nextStep = routeTargetMap.get(route);
         if(nextStep != null) {
           executionInfo.setNextStep(nextStep);
-        } else {
+        } else if(defaultRouteTarget != null) {
           executionInfo.setNextStep(defaultRouteTarget);
         }
         Consumer<TState> routeHandler = routeHandlerMap.get(route);
@@ -96,13 +101,11 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
           } else {
             routeHandler.accept(context);
           }
-        } else {
-          if(defaultRouteHandler != null) {
-            try {
-              defaultRouteHandler.accept(context);
-            } catch(Throwable error) {
-              errorHandler.accept(context, error);
-            }
+        } else if(defaultRouteHandler != null) {
+          try {
+            defaultRouteHandler.accept(context);
+          } catch(Throwable error) {
+            errorHandler.accept(context, error);
           }
         }
         //executionInfo.setNextStep(routeTargetMap.get(route));
@@ -148,9 +151,5 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
 
     executionInfo.setEndTime(Instant.now());
     return executionInfo;
-  }
-
-  public void setDefaultRouteTarget(TStep target) {
-    defaultRouteTarget = target;
   }
 }
