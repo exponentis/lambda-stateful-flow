@@ -49,11 +49,11 @@ public class BasicTests {
     .build();
 
   Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> steps = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
-    start("STEPS", GENERIC_STEPS.A).execute(c -> {
+    start("STEPS", GENERIC_STEPS.X).execute(c -> {
     String s = (String) c.get("input");
     c.put("output", s.length());
-  }).next(GENERIC_STEPS.B)
-    .step(GENERIC_STEPS.B).execute(c -> printIntegerSquare.execute((Integer) c.get("output"))).next(GENERIC_STEPS.C)
+  }).next(GENERIC_STEPS.Y)
+    .step(GENERIC_STEPS.Y).execute(c -> printIntegerSquare.execute((Integer) c.get("output"))).next(GENERIC_STEPS.Z)
     .build();
 
   Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
@@ -61,7 +61,7 @@ public class BasicTests {
     String s = (String) c.get("input");
     c.put("output", s.length());
   }).next(GENERIC_STEPS.Y)
-    .step(GENERIC_STEPS.Y).flow(printIntegerSquare.<Map>with(c -> ((String) c.get("input")).length())).next(GENERIC_STEPS.Z)
+    .step(GENERIC_STEPS.Y).flow(printIntegerSquare.<Map>with(c -> (Integer) c.get("output"))).next(GENERIC_STEPS.Z)
     .build();
 
   Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> extract = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
