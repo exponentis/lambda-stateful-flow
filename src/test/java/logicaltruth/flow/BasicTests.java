@@ -56,6 +56,14 @@ public class BasicTests {
     .step(GENERIC_STEPS.Y).execute(c -> printIntegerSquare.execute((Integer) c.get("output"))).next(GENERIC_STEPS.Z)
     .build();
 
+  static final Flow<Context<String, Integer, Void>, GENERIC_STEPS, EMPTY> context = FlowBuilder.<Context<String, Integer, Void>, GENERIC_STEPS, EMPTY>
+    start("STEPS", GENERIC_STEPS.X).execute(c -> {
+    String s = c.input();
+    c.setOutput(s.length());
+  }).next(GENERIC_STEPS.Y)
+    .step(GENERIC_STEPS.Y).execute(c -> printIntegerSquare.execute(c.output())).next(GENERIC_STEPS.Z)
+    .build();
+
   static final Flow<String, GENERIC_STEPS, EMPTY> stateMachine = FlowBuilder.<String, GENERIC_STEPS, EMPTY>
     start("SM", state -> {
     if(state.contains("a"))
@@ -261,6 +269,13 @@ public class BasicTests {
     }};
 
     FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = steps.execute(state);
+    System.out.println(info);
+  }
+
+  @Test
+  public void test_flow_context() {
+    Context<String, Integer, Void> state = new Context<>("Hello world");
+    FlowExecutionInfo info = context.execute(state);
     System.out.println(info);
   }
 
