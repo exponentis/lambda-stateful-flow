@@ -84,14 +84,7 @@ public class BasicTests {
     .in(GENERIC_STEPS.C).execute(state -> System.out.println("C")).next(GENERIC_STEPS.Z)
     .build();
 
-  static final Flow<Integer, GENERIC_STEPS, LEVELS> choice = FlowBuilder.<Integer, GENERIC_STEPS, LEVELS>
-    start("CHOICE", GENERIC_STEPS.A).evaluate(i ->  LEVELS.fromValue(i % 5))
-    .when(LEVELS.ZERO).execute(i -> System.out.println("0")).next(GENERIC_STEPS.X)
-    .when(LEVELS.ONE).execute(i -> System.out.println("1")).next(GENERIC_STEPS.Y)
-    .orElse(i -> System.out.println("2-4")).next(GENERIC_STEPS.Z)
-    .build();
-
-  static final Flow<String, GENERIC_STEPS, EMPTY> choice2 = FlowBuilder.<String, GENERIC_STEPS, EMPTY>
+  static final Flow<String, GENERIC_STEPS, EMPTY> choice1 = FlowBuilder.<String, GENERIC_STEPS, EMPTY>
     start("SM", GENERIC_STEPS.START).evaluateNext(state -> {
     if(state.contains("a"))
       return GENERIC_STEPS.A;
@@ -101,6 +94,13 @@ public class BasicTests {
   }).in(GENERIC_STEPS.A).execute(state -> System.out.println("A")).next(GENERIC_STEPS.X)
     .in(GENERIC_STEPS.B).execute(state -> System.out.println("B")).next(GENERIC_STEPS.Y)
     .in(GENERIC_STEPS.C).execute(state -> System.out.println("C")).next(GENERIC_STEPS.Z)
+    .build();
+
+  static final Flow<Integer, GENERIC_STEPS, LEVELS> choice2 = FlowBuilder.<Integer, GENERIC_STEPS, LEVELS>
+    start("CHOICE", GENERIC_STEPS.A).evaluate(i ->  LEVELS.fromValue(i % 5))
+    .when(LEVELS.ZERO).execute(i -> System.out.println("0")).next(GENERIC_STEPS.X)
+    .when(LEVELS.ONE).execute(i -> System.out.println("1")).next(GENERIC_STEPS.Y)
+    .orElse(i -> System.out.println("2-4")).next(GENERIC_STEPS.Z)
     .build();
 
   static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
@@ -303,32 +303,32 @@ public class BasicTests {
   }
 
   @Test
-  public void test_choice() {
-    FlowExecutionInfo info = choice.execute(0);
+  public void test_choice1() {
+    FlowExecutionInfo<String, GENERIC_STEPS, EMPTY> info = choice1.execute("a12");
     System.out.println(info);
 
-    info = choice.execute(1);
+    info = choice1.execute("b12");
     System.out.println(info);
 
-    info = choice.execute(2);
-    System.out.println(info);
-
-    info = choice.execute(3);
-    System.out.println(info);
-
-    info = choice.execute(4);
+    info = choice1.execute("x12");
     System.out.println(info);
   }
 
   @Test
   public void test_choice2() {
-    FlowExecutionInfo<String, GENERIC_STEPS, EMPTY> info = choice2.execute("a12");
+    FlowExecutionInfo info = choice2.execute(0);
     System.out.println(info);
 
-    info = stateMachine.execute("b12");
+    info = choice2.execute(1);
     System.out.println(info);
 
-    info = stateMachine.execute("x12");
+    info = choice2.execute(2);
+    System.out.println(info);
+
+    info = choice2.execute(3);
+    System.out.println(info);
+
+    info = choice2.execute(4);
     System.out.println(info);
   }
 
