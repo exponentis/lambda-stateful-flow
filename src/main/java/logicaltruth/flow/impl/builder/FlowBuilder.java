@@ -30,30 +30,24 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
   private Function<?, ?> functionHandler;
   private BiConsumer<?, TState> outputAdapter;
 
-  private FlowBuilder(final String name, final TStep initialState) {
+  protected FlowBuilder(final String name, final TStep initialState) {
     this.name = name;
     this.initialState = initialState;
   }
 
-  private FlowBuilder(final String name, final Function<TState, TStep> initialRouter) {
+  protected FlowBuilder(final String name, final Function<TState, TStep> initialRouter) {
     this.name = name;
     this.initialRouter = initialRouter;
   }
 
   public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> AfterIn<TState, TStep, TRoute> start(String name, TStep initialState) {
-    FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>(name, initialState);
-    flowBuilder.step(initialState);
-    return flowBuilder;
-  }
-
-  public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> AfterIn<TState, TStep, TRoute> start(TStep initialState) {
-    FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>("", initialState);
+    FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<>(name, initialState);
     flowBuilder.step(initialState);
     return flowBuilder;
   }
 
   public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> In<TState, TStep, TRoute> start(String name, Function<TState, TStep> initialRouter) {
-    FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>(name, initialRouter);
+    FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<>(name, initialRouter);
     return flowBuilder;
   }
 

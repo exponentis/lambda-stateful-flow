@@ -40,7 +40,11 @@ public class BasicTests {
     }
   }
 
-  static final Flow<String, GENERIC_STEPS, EMPTY> printStringLength = FlowBuilder.<String, GENERIC_STEPS, EMPTY>
+  static final Flow printStringLength = FlowBuilder.<String, GENERIC_STEPS, EMPTY>
+    start("STRLEN", GENERIC_STEPS.A).execute(c -> System.out.println(c.length())).next(GENERIC_STEPS.B)
+    .build();
+
+  static final Flow printStringLength_CustomFactory = CustomFlowBuilder.<String, GENERIC_STEPS>
     start("STRLEN", GENERIC_STEPS.A).execute(c -> System.out.println(c.length())).next(GENERIC_STEPS.B)
     .build();
 
@@ -258,6 +262,8 @@ public class BasicTests {
   @Test
   public void test_flow_simple() {
     printStringLength.execute("abc");
+    printStringLength_CustomFactory.execute("xyz");
+
     printIntegerSquare.execute(5);
     printIntegerSquare.with((String s) -> s.length()).execute("abc");
   }
