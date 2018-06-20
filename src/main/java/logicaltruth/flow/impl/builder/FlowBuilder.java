@@ -1,6 +1,5 @@
 package logicaltruth.flow.impl.builder;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import logicaltruth.flow.api.Flow;
 
 import static logicaltruth.flow.api.FlowBuilderDsl.*;
@@ -70,14 +69,14 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
       steps.put(state, new SimpleFlowStep(state));
   }
 
-  public When<TState, TStep, TRoute> choice(Function<TState, TRoute> router) {
+  public When<TState, TStep, TRoute> evaluate(Function<TState, TRoute> router) {
     if(currentStep != null)
       getCurrentStep().setRouter(router);
     return this;
   }
 
   @Override
-  public In<TState, TStep, TRoute> evaluate(Function<TState, TStep> router) {
+  public In<TState, TStep, TRoute> evaluateNext(Function<TState, TStep> router) {
     if(currentStep != null)
       getCurrentStep().setStepRouter(router);
     return this;

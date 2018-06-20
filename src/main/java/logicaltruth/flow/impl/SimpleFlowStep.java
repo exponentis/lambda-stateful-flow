@@ -51,7 +51,7 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
 
   public void setRouteHandler(TRoute route, Consumer<TState> routeHandler) {
     if(routeHandlerMap.containsKey(route))
-      throw new FlowBuilderException(String.format("Handler for choice: %s step state: %s is already declared", route, state));
+      throw new FlowBuilderException(String.format("Handler for evaluate: %s step state: %s is already declared", route, state));
     routeHandlerMap.put(route, routeHandler);
   }
 
@@ -61,7 +61,7 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
 
   public void setRouteTarget(TRoute route, TStep target) {
     if(routeTargetMap.containsKey(route))
-      throw new FlowBuilderException(String.format("Target for choice: %s step state: %s is already declared", route, state));
+      throw new FlowBuilderException(String.format("Target for evaluate: %s step state: %s is already declared", route, state));
     routeTargetMap.put(route, target);
   }
 

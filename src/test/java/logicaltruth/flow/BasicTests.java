@@ -69,7 +69,7 @@ public class BasicTests {
     .build();
 
   static final Flow<String, GENERIC_STEPS, EMPTY> stateMachine2 = FlowBuilder.<String, GENERIC_STEPS, EMPTY>
-    start("SM", GENERIC_STEPS.START).evaluate(state -> {
+    start("SM", GENERIC_STEPS.START).evaluateNext(state -> {
     if(state.contains("a"))
       return GENERIC_STEPS.A;
     else if(state.contains("b"))
@@ -112,7 +112,7 @@ public class BasicTests {
     .build();
 
   static final Flow<Integer, GENERIC_STEPS, LEVELS> choice = FlowBuilder.<Integer, GENERIC_STEPS, LEVELS>
-    start("CHOICE", GENERIC_STEPS.A).choice(i ->  LEVELS.fromValue(i % 5))
+    start("CHOICE", GENERIC_STEPS.A).evaluate(i ->  LEVELS.fromValue(i % 5))
     .when(LEVELS.ZERO).execute(i -> System.out.println("0")).next(GENERIC_STEPS.X)
     .when(LEVELS.ONE).execute(i -> System.out.println("1")).next(GENERIC_STEPS.Y)
     .orElse(i -> System.out.println("2-4")).next(GENERIC_STEPS.Z)

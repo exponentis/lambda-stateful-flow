@@ -14,8 +14,8 @@ public interface FlowBuilderDsl {
   }
 
   interface Route<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
-    When<TState, TStep, TRoute> choice(Function<TState, TRoute> router);
-    In<TState, TStep, TRoute> evaluate(Function<TState, TStep> initialRouter);
+    When<TState, TStep, TRoute> evaluate(Function<TState, TRoute> router);
+    In<TState, TStep, TRoute> evaluateNext(Function<TState, TStep> initialRouter);
   }
 
   interface When<TState, TStep extends Enum<?>, TRoute extends Enum<?>> {
