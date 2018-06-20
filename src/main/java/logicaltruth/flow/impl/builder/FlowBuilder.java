@@ -48,7 +48,7 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
     return flowBuilder;
   }
 
-  public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> AfterIn<TState, TStep, TRoute> start(String name, Function<TState, TStep> initialRouter) {
+  public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> In<TState, TStep, TRoute> start(String name, Function<TState, TStep> initialRouter) {
     FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>(name, initialRouter);
     return flowBuilder;
   }

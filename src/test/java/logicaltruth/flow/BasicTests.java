@@ -56,6 +56,18 @@ public class BasicTests {
     .step(GENERIC_STEPS.Y).execute(c -> printIntegerSquare.execute((Integer) c.get("output"))).next(GENERIC_STEPS.Z)
     .build();
 
+  static final Flow<String, GENERIC_STEPS, EMPTY> stateMachine = FlowBuilder.<String, GENERIC_STEPS, EMPTY>
+    start("SM", state -> {
+    if(state.contains("a"))
+      return GENERIC_STEPS.A;
+    else if(state.contains("b"))
+      return GENERIC_STEPS.B;
+    else return GENERIC_STEPS.C;
+  }).in(GENERIC_STEPS.A).execute(state -> System.out.println("A")).next(GENERIC_STEPS.X)
+    .in(GENERIC_STEPS.B).execute(state -> System.out.println("B")).next(GENERIC_STEPS.Y)
+    .in(GENERIC_STEPS.C).execute(state -> System.out.println("C")).next(GENERIC_STEPS.Z)
+    .build();
+
   static final Flow<Map<String, Object>, GENERIC_STEPS, EMPTY> nested = FlowBuilder.<Map<String, Object>, GENERIC_STEPS, EMPTY>
     start("NESTED", GENERIC_STEPS.X).execute(c -> {
     String s = (String) c.get("input");
@@ -237,6 +249,18 @@ public class BasicTests {
     }};
 
     FlowExecutionInfo<Map<String, Object>, GENERIC_STEPS, EMPTY> info = steps.execute(state);
+    System.out.println(info);
+  }
+
+  @Test
+  public void test_flow_state_machine() {
+    FlowExecutionInfo<String, GENERIC_STEPS, EMPTY> info = stateMachine.execute("a12");
+    System.out.println(info);
+
+    info = stateMachine.execute("b12");
+    System.out.println(info);
+
+    info = stateMachine.execute("x12");
     System.out.println(info);
   }
 
