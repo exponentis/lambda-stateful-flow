@@ -27,6 +27,7 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
   private Map<TRoute, TStep> routeTargetMap = new HashMap<TRoute, TStep>();
   private Consumer<TState> defaultRouteHandler;
   private TStep defaultRouteTarget;
+  private Function<TState, TStep> stepRouter;
 
   public SimpleFlowStep(TStep state) {
     this.state = state;
@@ -40,13 +41,17 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
     this.flowHandler = flow;
   }
 
+  public void setStepRouter(Function<TState, TStep> router) {
+    this.stepRouter = router;
+  }
+
   public void setRouter(Function<TState, TRoute> router) {
     this.router = router;
   }
 
   public void setRouteHandler(TRoute route, Consumer<TState> routeHandler) {
     if(routeHandlerMap.containsKey(route))
-      throw new FlowBuilderException(String.format("Handler for evaluate: %s step state: %s is already declared", route, state));
+      throw new FlowBuilderException(String.format("Handler for choice: %s step state: %s is already declared", route, state));
     routeHandlerMap.put(route, routeHandler);
   }
 
@@ -56,7 +61,7 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
 
   public void setRouteTarget(TRoute route, TStep target) {
     if(routeTargetMap.containsKey(route))
-      throw new FlowBuilderException(String.format("Target for evaluate: %s step state: %s is already declared", route, state));
+      throw new FlowBuilderException(String.format("Target for choice: %s step state: %s is already declared", route, state));
     routeTargetMap.put(route, target);
   }
 
@@ -109,6 +114,9 @@ public class SimpleFlowStep<TState, TStep extends Enum<?>, TRoute extends Enum<?
           }
         }
         //executionInfo.setNextStep(routeTargetMap.get(route));
+      } else if(stepRouter != null) {
+        TStep nextStep = stepRouter.apply(context);
+        executionInfo.setNextStep(nextStep);
       } else {
         executionInfo.setNextStep(nextStep);
         if(handler != null) {

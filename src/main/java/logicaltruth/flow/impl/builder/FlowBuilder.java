@@ -15,7 +15,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> implements FluentFlowBuilder<TState, TStep, TRoute> {
-
   //builder outcome
   private final String name;
   private TStep initialState = null;
@@ -48,14 +47,14 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
     return flowBuilder;
   }
 
-  public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> In<TState, TStep, TRoute> start(String name, Function<TState, TStep> initialRouter) {
-    FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>(name, initialRouter);
-    return flowBuilder;
-  }
-
   public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> AfterIn<TState, TStep, TRoute> start(TStep initialState) {
     FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>("", initialState);
     flowBuilder.step(initialState);
+    return flowBuilder;
+  }
+
+  public static <TState, TStep extends Enum<?>, TRoute extends Enum<?>> In<TState, TStep, TRoute> start(String name, Function<TState, TStep> initialRouter) {
+    FlowBuilder<TState, TStep, TRoute> flowBuilder = new FlowBuilder<TState, TStep, TRoute>(name, initialRouter);
     return flowBuilder;
   }
 
@@ -71,9 +70,16 @@ public class FlowBuilder<TState, TStep extends Enum<?>, TRoute extends Enum<?>> 
       steps.put(state, new SimpleFlowStep(state));
   }
 
-  public When<TState, TStep, TRoute> evaluate(Function<TState, TRoute> router) {
+  public When<TState, TStep, TRoute> choice(Function<TState, TRoute> router) {
     if(currentStep != null)
       getCurrentStep().setRouter(router);
+    return this;
+  }
+
+  @Override
+  public In<TState, TStep, TRoute> evaluate(Function<TState, TStep> router) {
+    if(currentStep != null)
+      getCurrentStep().setStepRouter(router);
     return this;
   }
 
